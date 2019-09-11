@@ -13,8 +13,7 @@ func PrintTitle(inputFile string) {
 	// Read CSV File
 	inputCSV, inputError := os.OpenFile(inputFile, os.O_RDONLY, 0666)
 	if inputError != nil {
-		fmt.Println("[Error] Error While Open CSV File")
-		os.Exit(2)
+		tools.ErrorLogger.Fatalln("Error While Open CSV File")
 	}
 	defer inputCSV.Close()
 	// Init CSV Reader
@@ -22,12 +21,12 @@ func PrintTitle(inputFile string) {
 	record, err := reader.Read()
 	if err != nil {
 		if err == io.EOF {
-			fmt.Println("[Error] No Title For This CSV File")
-			os.Exit(1)
+			tools.ErrorLogger.Fatalln("No Title For This CSV File")
 		}
-		fmt.Println(err)
+		tools.ErrorLogger.Fatalln(err)
 	}
 	for id, value := range record {
+		tools.InfoLogger.Println("Title:")
 		fmt.Println(id, value)
 	}
 }
@@ -60,43 +59,42 @@ func PrintTitle(inputFile string) {
 // }
 
 // PrintNRecord return the Nth row of data
-func PrintNRecord(inputFile string, N int) {
-	// Handle Error
-	recordNum := tools.CountRecord(inputFile)
-	if N > recordNum {
-		fmt.Println("[Error] Out Of Range")
-		os.Exit(2)
-	}
-	// Read CSV File
-	inputCSV, inputError := os.OpenFile(inputFile, os.O_RDONLY, 0666)
-	if inputError != nil {
-		fmt.Println("[Error] Error While Open CSV File")
-		os.Exit(2)
-	}
-	defer inputCSV.Close()
-	// Init CSV Reader
-	reader := csv.NewReader(inputCSV)
-	//
-	linecount := 1
-	for {
-		record, err := reader.Read()
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			fmt.Println(err)
-		}
-		if linecount == N {
-			fmt.Println("Record :", record)
-			break
-		}
-		linecount++
-	}
-}
+// func PrintNRecord(inputFile string, N int) {
+// 	// Handle Error
+// 	recordNum := tools.CountRecord(inputFile)
+// 	if N > recordNum {
+// 		tools.ErrorLogger.Fatalln("Out Of Range")
+// 	}
+// 	// Read CSV File
+// 	inputCSV, inputError := os.OpenFile(inputFile, os.O_RDONLY, 0666)
+// 	if inputError != nil {
+// 		tools.ErrorLogger.Fatalln("Error While Open CSV File")
+// 	}
+// 	defer inputCSV.Close()
+// 	// Init CSV Reader
+// 	reader := csv.NewReader(inputCSV)
+// 	//
+// 	linecount := 1
+// 	for {
+// 		record, err := reader.Read()
+// 		if err != nil {
+// 			if err == io.EOF {
+// 				break
+// 			}
+// 			fmt.Println(err)
+// 		}
+// 		if linecount == N {
+// 			tools.InfoLogger.Println("The Nth Row Of Data:")
+// 			fmt.Println("Record :", record)
+// 			break
+// 		}
+// 		linecount++
+// 	}
+// }
 
 // func main() {
-// 	inputFile := "aws_bill.csv"
+// 	inputFile := "azure_bill.csv"
 // 	// PrintTitle(inputFile)
-// 	// PrintNRecord(inputFile, 3000)
-// 	tools.CountRecord(inputFile)
+// 	tools.PrintNRecord(inputFile, 11332)
+// 	// tools.CountRecord(inputFile)
 // }
