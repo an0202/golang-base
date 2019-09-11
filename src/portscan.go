@@ -46,7 +46,11 @@ func (ps *PortScanner) Scan(host string, startPort, endPort int32) {
 				return
 			}
 			defer conn.Close()
+			// append availableport
+			lock := new(sync.Mutex)
+			lock.Lock()
 			ps.availablePorts = append(ps.availablePorts, port)
+			lock.Unlock()
 		}(port)
 	}
 	wg.Wait()
@@ -54,20 +58,12 @@ func (ps *PortScanner) Scan(host string, startPort, endPort int32) {
 	fmt.Printf("[INFO] Available Ports Is : %d\n", ps.availablePorts)
 }
 
-// Add port to availablePorts
-func (ps *PortScanner) AddPort(port int32) {
-	lock := new(sync.Mutex)
-	lock.Lock()
-	defer lock.Unlock()
-	ps.availablePorts = append(ps.availablePorts, port)
-}
-
 func main() {
 	fmt.Println("[INFO] Task Start")
 	ps := new(PortScanner)
 	ps.ipAddr = "127.0.0.1"
-	ps.startPort = 1080
-	ps.endPort = 3080
+	ps.startPort = 1000
+	ps.endPort = 2000
 	ps.Check(ps.ipAddr, ps.startPort, ps.endPort)
 	ps.Scan(ps.ipAddr, ps.startPort, ps.endPort)
 	fmt.Println("[INFO] Task Done")
