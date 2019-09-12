@@ -2,12 +2,25 @@ package main
 
 import (
 	"encoding/csv"
+	"flag"
 	"io"
 	"math"
 	"os"
 	"regexp"
 	"tools"
 )
+
+var (
+	inputFile *string
+	accountID *string
+	help      *bool
+)
+
+func init() {
+	inputFile = flag.String("file", "origin.csv", "Source File To Be Processed")
+	accountID = flag.String("id", "869869223565", "Linked Account ID")
+	help = flag.Bool("h", false, "Print This Message")
+}
 
 // RateOfProgress is a counter for progeress, such as a progress bar
 func RateOfProgress(inputFile string) int {
@@ -20,14 +33,20 @@ func RateOfProgress(inputFile string) int {
 }
 
 func main() {
-	inputFile := "aws_bill0.csv"
-	accountID := "869869223565"
-
+	// Parse flag
+	flag.Parse()
+	if *help == true {
+		flag.Usage()
+		os.Exit(1)
+	}
+	if flag.NFlag() == 0 {
+		flag.Usage()
+	}
 	tools.InfoLogger.Println("Task Start")
 	// PrintTitle(inputFile)
-	baseRateCount := RateOfProgress(inputFile)
+	baseRateCount := RateOfProgress(*inputFile)
 	// Read file from csv.csv
-	inputCSV, inputError := os.OpenFile(inputFile, os.O_RDONLY, 0666)
+	inputCSV, inputError := os.OpenFile(*inputFile, os.O_RDONLY, 0666)
 
 	if inputError != nil {
 		tools.ErrorLogger.Fatalln(inputError)
@@ -64,7 +83,7 @@ func main() {
 			if (baseRateCount != 0) && (lineCount%baseRateCount == 0) {
 				tools.InfoLogger.Println("Processing , Processed Rows :", lineCount)
 			}
-			match, _ := regexp.MatchString(accountID, record[2])
+			match, _ := regexp.MatchString(*accountID, record[2])
 			if match == true {
 				writer.Write(record)
 			}
