@@ -2,73 +2,77 @@ package main
 
 import (
 	"encoding/csv"
-	"fmt"
 	"io"
+	"math"
 	"os"
 	"regexp"
-	"time"
+	"tools"
 )
 
+// RateOfProgress is a counter for progeress, such as a progress bar
+func RateOfProgress(inputFile string) int {
+	lineCount := tools.CountRecord(inputFile)
+	if lineCount > 100000 {
+		oneTenthCount := float64(lineCount / 10)
+		return int(math.Ceil(oneTenthCount))
+	}
+	return 0
+}
+
 func main() {
+	inputFile := "aws_bill0.csv"
+	accountID := "869869223565"
+
+	tools.InfoLogger.Println("Task Start")
+	// PrintTitle(inputFile)
+	baseRateCount := RateOfProgress(inputFile)
 	// Read file from csv.csv
-	inputCSV, inputError := os.OpenFile("origin.csv", os.O_RDONLY, 0666)
+	inputCSV, inputError := os.OpenFile(inputFile, os.O_RDONLY, 0666)
 
 	if inputError != nil {
-		fmt.Println("Error while open csv file")
+		tools.ErrorLogger.Fatalln(inputError)
 	}
 	defer inputCSV.Close()
 	// init csv reader
 	reader := csv.NewReader(inputCSV)
 	// out put message to output.csv
-	outputCSV, outputError := os.OpenFile("csv_output.csv", os.O_WRONLY|os.O_CREATE, 0666)
+	outputCSV, outputError := os.OpenFile("csv_fliter_output.csv", os.O_WRONLY|os.O_CREATE, 0666)
 	if outputError != nil {
-		fmt.Println("An error occurred with file opening or cration")
+		tools.ErrorLogger.Fatalln(outputError)
 		return
 	}
 	defer outputCSV.Close()
 	writer := csv.NewWriter(outputCSV)
 	// count line from src file
-	linecount := 1
+	lineCount := 1
 	for {
-		// if linecount == 200000 {
+		// if lineCount == 200000 {
 		// 	break
 		// }
-
 		record, err := reader.Read()
 		if err != nil {
 			if err == io.EOF {
 				break
 			}
-			fmt.Println(err)
+			tools.ErrorLogger.Fatalln(err)
 		}
 		// out put fist line "title" to output.csv
-		if linecount == 1 {
+		if lineCount == 1 {
 			writer.Write(record)
-			// fmt.Println(record[2])
 		} else {
-			// out put specific line to output.csv
-			// for _, value := range record {
-			// 	match, _ := regexp.MatchString("^869869223565$", value)
-			// 	if match == true {
-			// 		// fmt.Println(record, linecount)
-			// 		writer.Write(record)
-			// 	}
-			// }
-			if linecount%120000 == 0 {
-				fmt.Println("[INFO] Be Patient, Processed Rows :", linecount, time.Now())
+			// show progressBar if necessary , out put specific to output.csv
+			if (baseRateCount != 0) && (lineCount%baseRateCount == 0) {
+				tools.InfoLogger.Println("Processing , Processed Rows :", lineCount)
 			}
-			match, _ := regexp.MatchString("^869869223565$", record[2])
+			match, _ := regexp.MatchString(accountID, record[2])
 			if match == true {
-				// fmt.Println(record, linecount)
 				writer.Write(record)
 			}
 		}
-		linecount++
-		// fmt.Println("Count Line:", linecount, "Value:", record)
-		// fmt.Println(reflect.TypeOf(record))
+		lineCount++
 	}
 	// flush to file
 	writer.Flush()
-	// Number of processed rows
-	fmt.Println("[INFO] Task Done ,Number Of Processed Rows:", linecount)
+	// End task
+	tools.InfoLogger.Println("Task Done")
 }
