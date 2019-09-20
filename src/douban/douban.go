@@ -4,11 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"regexp"
 	"strconv"
 	"tools"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
 type MovieDetail struct {
@@ -27,15 +31,36 @@ type MovieDetail struct {
 	AggregateRating map[string]interface{} `json:"aggregateRating"`
 }
 
-func printMoviesList(contents []byte) []string {
+// printMoviesList by regrex
+func printMoviesListv2(contents []byte) []string {
 	// regexp
 	var movieURLs []string
 	re := regexp.MustCompile(`<a href="(https://movie.douban.com/subject/[0-9]+/)".*\n.*<span class="title">(.*)</span>\n(.*\n){1,2}.*</a>`)
 	matches := re.FindAllSubmatch(contents, -1)
+
 	for _, m := range matches {
 		// fmt.Printf("Title: %s,URL: %s\n", m[2], m[1])
 		movieURLs = append(movieURLs, string(m[1]))
 	}
+	return movieURLs
+}
+
+//printMoviesList by goquery
+func printMoviesList(contents io.Reader) []string {
+	// regexp
+	var movieURLs []string
+	dom, err := goquery.NewDocumentFromReader(contents)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	dom.Find("div.hd").Each(func(i int, selection *goquery.Selection) {
+		fmt.Println(selection.Find("a").Attr("href"))
+		fmt.Println(selection.Find("a>span.title").First().Text())
+	})
+
+	dom.Find("div")
+
 	return movieURLs
 }
 
@@ -71,23 +96,28 @@ func describeURL(URL string) {
 }
 
 func main() {
-	for i := 0; i <= 225; {
+	for i := 0; i <= 0; {
 		URL := "https://movie.douban.com/top250/?start=" + strconv.Itoa(i)
 		resp, err := http.Get(URL)
 		if err != nil {
 			tools.ErrorLogger.Println(err)
 		}
-		record, err := ioutil.ReadAll(resp.Body)
-		defer resp.Body.Close()
-		if err != nil {
-			tools.ErrorLogger.Println(err)
-		}
-		moviesurllist := printMoviesList(record)
-		for _, movieurl := range moviesurllist {
-			// fmt.Println("start to process ", movieurl)
-			describeURL(movieurl)
-		}
-		i += 25
+		// use for printMoviesListv2
+		// record, err := ioutil.ReadAll(resp.Body)
+		// defer resp.Body.Close()
+		// if err != nil {
+		// 	tools.ErrorLogger.Println(err)
+		// }
+		// moviesurllist := printMoviesList(record)
+		// for _, movieurl := range moviesurllist {
+		// 	// fmt.Println("start to process ", movieurl)
+		// 	describeURL(movieurl)
+		// }
+		// i += 25
+
+		// use for printMoviesList
+		printMoviesList(resp.Body)
+		i++
 	}
 	// resp, err := http.Get("https://movie.douban.com/subject/1292052/")
 	// if err != nil {
