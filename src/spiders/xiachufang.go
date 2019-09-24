@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
+	"sync"
 	"tools"
 
 	"github.com/PuerkitoBio/goquery"
@@ -25,9 +25,14 @@ type DishesDetail struct {
 //printDishesList by goquery
 func printDishesList(URL string) []string {
 	// http get
+	fmt.Println("start")
 	resp, err := http.Get(URL)
 	if err != nil {
 		tools.ErrorLogger.Fatalln(err)
+	}
+	switch resp.StatusCode {
+	case 404:
+		tools.ErrorLogger.Fatalln(resp.StatusCode)
 	}
 	dom, err1 := goquery.NewDocumentFromReader(resp.Body)
 	defer resp.Body.Close()
@@ -75,7 +80,7 @@ func describeDishes(URL string) {
 		panic(err)
 	}
 	fmt.Printf("%s\n", b)
-	time.Sleep(3 * time.Second)
+	// time.Sleep(3 * time.Second)
 }
 
 func main() {
@@ -113,11 +118,17 @@ func main() {
 	// 	panic(err)
 	// }
 	for i := 1; i <= 2; {
-		URL := "http://www.xiachufang.com/explore/monthhonor/201908/?page=" + strconv.Itoa(i)
+		URL := "http://www.xiachufang.com/explore/monthhonor/201812/?page=" + strconv.Itoa(i)
 		DishesList := printDishesList(URL)
+		wg := sync.WaitGroup{}
 		for _, dishesurl := range DishesList {
-			describeDishes(dishesurl)
+			wg.Add(1)
+			go func(dishesurl string) {
+				defer wg.Done()
+				describeDishes(dishesurl)
+			}(dishesurl)
 		}
+		wg.Wait()
 		i++
 	}
 	// describeURL("http://www.xiachufang.com/recipe/102180897/")
