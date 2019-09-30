@@ -46,7 +46,6 @@ func main() {
 	for _, v := range obj.Users {
 		fmt.Println(v)
 		u := User{}
-		u.
 		user, _ := json.Marshal(u)
 		fmt.Printf("%s\n", user)
 	}
