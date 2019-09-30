@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 	"tools"
 
 	"github.com/PuerkitoBio/goquery"
@@ -25,11 +26,11 @@ type DishesDetail struct {
 //printDishesList by goquery
 func printDishesList(URL string) []string {
 	// http get
-	fmt.Println("start")
 	resp, err := http.Get(URL)
 	if err != nil {
 		tools.ErrorLogger.Fatalln(err)
 	}
+	// handle 404 error
 	switch resp.StatusCode {
 	case 404:
 		tools.ErrorLogger.Fatalln(resp.StatusCode)
@@ -117,8 +118,9 @@ func main() {
 	// if err != nil {
 	// 	panic(err)
 	// }
+	defer tools.TimeTrack(time.Now(), "main")
 	for i := 1; i <= 2; {
-		URL := "http://www.xiachufang.com/explore/monthhonor/201812/?page=" + strconv.Itoa(i)
+		URL := "http://www.xiachufang.com/explore/monthhonor/201801/?page=" + strconv.Itoa(i)
 		DishesList := printDishesList(URL)
 		wg := sync.WaitGroup{}
 		for _, dishesurl := range DishesList {
