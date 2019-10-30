@@ -1,6 +1,6 @@
 package main
 
-import "aws"
+import "golang-base/aws"
 
 func main() {
 	sess := aws.InitSession()

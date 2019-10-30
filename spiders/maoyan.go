@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
+	"golang-base/tools"
 	"io"
 	"log"
 	"net/http"
-	"spiders/tools"
 
 	"github.com/PuerkitoBio/goquery"
 )
