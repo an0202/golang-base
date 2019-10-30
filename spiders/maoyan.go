@@ -5,7 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"tools"
+	"spiders/tools"
 
 	"github.com/PuerkitoBio/goquery"
 )

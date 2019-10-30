@@ -1,4 +1,4 @@
-package main
+package aws
 
 import (
 	"context"
@@ -12,12 +12,12 @@ import (
 	"golang.org/x/net/context/ctxhttp"
 )
 
-func init() {
-	xray.Configure(xray.Config{
-		DaemonAddr:     "10.250.101.190:2000", // default
-		ServiceVersion: "1.2.3",
-	})
-}
+// func init() {
+// 	xray.Configure(xray.Config{
+// 		DaemonAddr:     "10.250.101.190:2000", // default
+// 		ServiceVersion: "1.2.3",
+// 	})
+// }
 
 func getExample(ctx context.Context) ([]byte, error) {
 	resp, err := ctxhttp.Get(ctx, xray.Client(nil), "http://baiduaabb.com/")
@@ -29,7 +29,7 @@ func getExample(ctx context.Context) ([]byte, error) {
 	return ioutil.ReadAll(resp.Body)
 }
 
-func main() {
+func xrayDemo() {
 	// Init a session
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("us-east-2")},
