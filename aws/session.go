@@ -7,13 +7,13 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 )
 
-func InitSession() *session.Session {
+func InitSession(region string) *session.Session {
 	// Init a session
 	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String("us-east-2")},
+		Region: aws.String(region)},
 	)
 	if err != nil {
 		fmt.Println(err)
 	}
-	return (sess)
+	return sess
 }
