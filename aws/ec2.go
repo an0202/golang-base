@@ -20,8 +20,15 @@ type EC2InstanceDetail struct {
 	InstanceID string
 	Region     string
 	Tags       map[string]string
+	BlockDeviceMappings []EBSDetail
 }
 
+type EBSDetail struct{
+	VolumeId string
+	Status  string
+}
+
+// EC2Instance retype from excel
 func EC2InstanceMarshal(ec2instancedetail map[string]string) (instance EC2InstanceDetail) {
 	instance.Tags = make(map[string]string)
 	if _, ok := ec2instancedetail["InstanceID"]; ok {
@@ -54,16 +61,32 @@ func EC2CreateTags(sess *session.Session, instance EC2InstanceDetail) {
 	}
 	// Create an EC2 service client.
 	svc := ec2.New(sess)
-
-	result, err := svc.CreateTags(&ec2.CreateTagsInput{
+	// Get EBSid
+	ebsmap, err := svc.DescribeInstanceAttribute(&ec2.DescribeInstanceAttributeInput{
+		DryRun:     aws.Bool(false),
+		InstanceId: aws.String(instance.InstanceID),
+		Attribute:  aws.String("blockDeviceMapping"),
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
+	for _,v := range ebsmap.BlockDeviceMappings{
+		var ebs = EBSDetail{
+			VolumeId: *v.Ebs.VolumeId,
+			Status:   *v.Ebs.Status,
+		}
+		resourceIDs = append(resourceIDs, ebs.VolumeId)
+	}
+	fmt.Println(resourceIDs)
+	// Create tag
+ 	_, err = svc.CreateTags(&ec2.CreateTagsInput{
 		DryRun:    aws.Bool(false),
 		Resources: aws.StringSlice(resourceIDs),
 		Tags:      tags,
 	})
-	fmt.Println(err)
 	if err != nil {
+		fmt.Println(err)
 	}
-	fmt.Println(result)
 }
 
 func EC2DeleteTags(sess *session.Session, instance EC2InstanceDetail) {
@@ -78,28 +101,30 @@ func EC2DeleteTags(sess *session.Session, instance EC2InstanceDetail) {
 	}
 	// Create an EC2 service client.
 	svc := ec2.New(sess)
-
-	result, err := svc.DeleteTags(&ec2.DeleteTagsInput{
-		DryRun:    aws.Bool(false),
-		Resources: aws.StringSlice(resourceIDs),
-		Tags:      tags,
-	})
-	fmt.Println(err)
-	if err != nil {
-	}
-	fmt.Println(result)
-}
-
-func Testdescribeinstance(sess *session.Session, instanceid string) {
-	// Create an EC2 service client.
-	svc := ec2.New(sess)
-	result, err := svc.DescribeInstanceAttribute(&ec2.DescribeInstanceAttributeInput{
+	// Get EBSid
+	ebsmap, err := svc.DescribeInstanceAttribute(&ec2.DescribeInstanceAttributeInput{
 		DryRun:     aws.Bool(false),
-		InstanceId: aws.String(instanceid),
+		InstanceId: aws.String(instance.InstanceID),
 		Attribute:  aws.String("blockDeviceMapping"),
 	})
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(result)
+	for _,v := range ebsmap.BlockDeviceMappings{
+		var ebs = EBSDetail{
+			VolumeId: *v.Ebs.VolumeId,
+			Status:   *v.Ebs.Status,
+		}
+		resourceIDs = append(resourceIDs, ebs.VolumeId)
+	}
+	fmt.Println(resourceIDs)
+	// delete tag
+	_, err = svc.DeleteTags(&ec2.DeleteTagsInput{
+		DryRun:    aws.Bool(false),
+		Resources: aws.StringSlice(resourceIDs),
+		Tags:      tags,
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
 }

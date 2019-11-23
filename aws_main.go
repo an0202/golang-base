@@ -2,6 +2,7 @@ package main
 
 import (
 	"golang-base/aws"
+	"golang-base/excel"
 )
 
 func main() {
@@ -21,14 +22,10 @@ func main() {
 	//	"key19":      "test19",
 	//}
 	//fmt.Println(tagsmap[key1])
-	//b := aws.EC2InstanceMarshal(tagsmap)
-	//fmt.Println(b.InstanceID)
-	//aws.EC2CreateTags(sess, b)
 	//a := excel.ReadTest("C:\\Users\\jie.an\\Desktop\\tags2.xlsx", "EC2")
-	//for k, v := range a {
-	//	fmt.Println(k, v)
-	//	b := aws.EC2InstanceMarshal(v)
-	//	aws.EC2DeleteTags(sess, b)
-	//}
-	aws.Testdescribeinstance(sess, "i-03177f7cffb8462be")
+	a := excel.ReadTest("/Users/anjie/Desktop/tags2.xlsx", "EC2")
+	for _, v := range a {
+		b := aws.EC2InstanceMarshal(v)
+		aws.EC2DeleteTags(sess, b)
+	}
 }
