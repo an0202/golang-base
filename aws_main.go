@@ -1,14 +1,11 @@
 package main
 
-import (
-	"golang-base/aws"
-	"golang-base/excel"
-)
+import "golang-base/cmd"
 
 func main() {
 	// get policy
 	//var headerline = []interface{}{"GroupName", "VpcId", "GroupId", "Protocol", "Source", "FromPort", "ToPort"}
-	sess := aws.InitSession("cn-north-1")
+	// sess := aws.InitSession("cn-north-1")
 	//a := aws.GetSGPolicys(sess)
 	//excel.CreateFile("C:\\Users\\jie.an\\Desktop\\test.xlsx", "test")
 	//excel.SetHeaderLine("C:\\Users\\jie.an\\Desktop\\test.xlsx", "test2", headerline)
@@ -23,9 +20,5 @@ func main() {
 	//}
 	//fmt.Println(tagsmap[key1])
 	//a := excel.ReadTest("C:\\Users\\jie.an\\Desktop\\tags2.xlsx", "EC2")
-	a := excel.ReadTest("/Users/anjie/Desktop/tags2.xlsx", "EC2")
-	for _, v := range a {
-		b := aws.EC2InstanceMarshal(v)
-		aws.EC2DeleteTags(sess, b)
-	}
+	cmd.EC2addtags()
 }

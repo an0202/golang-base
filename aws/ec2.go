@@ -8,12 +8,10 @@
 package aws
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"golang-base/tools"
 )
 
 type EC2InstanceDetail struct {
@@ -43,8 +41,7 @@ func EC2InstanceMarshal(ec2instancedetail map[string]string) (instance EC2Instan
 			}
 		}
 	} else {
-		fmt.Println("Error While Processing:", ec2instancedetail)
-		os.Exit(2)
+		tools.ErrorLogger.Fatalln("Missing InstanceID:", ec2instancedetail)
 	}
 	return instance
 }
@@ -68,7 +65,7 @@ func EC2CreateTags(sess *session.Session, instance EC2InstanceDetail) {
 		Attribute:  aws.String("blockDeviceMapping"),
 	})
 	if err != nil {
-		fmt.Println(err)
+		tools.WarningLogger.Fatal(err)
 	}
 	for _,v := range ebsmap.BlockDeviceMappings{
 		var ebs = EBSDetail{
@@ -77,7 +74,7 @@ func EC2CreateTags(sess *session.Session, instance EC2InstanceDetail) {
 		}
 		resourceIDs = append(resourceIDs, ebs.VolumeId)
 	}
-	fmt.Println(resourceIDs)
+	tools.InfoLogger.Println("Add Tags To :",resourceIDs)
 	// Create tag
  	_, err = svc.CreateTags(&ec2.CreateTagsInput{
 		DryRun:    aws.Bool(false),
@@ -85,7 +82,7 @@ func EC2CreateTags(sess *session.Session, instance EC2InstanceDetail) {
 		Tags:      tags,
 	})
 	if err != nil {
-		fmt.Println(err)
+		tools.WarningLogger.Println(err)
 	}
 }
 
@@ -108,7 +105,7 @@ func EC2DeleteTags(sess *session.Session, instance EC2InstanceDetail) {
 		Attribute:  aws.String("blockDeviceMapping"),
 	})
 	if err != nil {
-		fmt.Println(err)
+		tools.WarningLogger.Fatal(err)
 	}
 	for _,v := range ebsmap.BlockDeviceMappings{
 		var ebs = EBSDetail{
@@ -117,7 +114,7 @@ func EC2DeleteTags(sess *session.Session, instance EC2InstanceDetail) {
 		}
 		resourceIDs = append(resourceIDs, ebs.VolumeId)
 	}
-	fmt.Println(resourceIDs)
+	tools.InfoLogger.Println("Delete Tags From :",resourceIDs)
 	// delete tag
 	_, err = svc.DeleteTags(&ec2.DeleteTagsInput{
 		DryRun:    aws.Bool(false),
@@ -125,6 +122,6 @@ func EC2DeleteTags(sess *session.Session, instance EC2InstanceDetail) {
 		Tags:      tags,
 	})
 	if err != nil {
-		fmt.Println(err)
+		tools.WarningLogger.Println(err)
 	}
 }

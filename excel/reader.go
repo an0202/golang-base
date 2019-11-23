@@ -8,35 +8,37 @@
 package excel
 
 import (
-	"fmt"
+	"golang-base/tools"
 
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
 )
 
-func ReadTest(path, sheetname string) (rowmaps []map[string]string) {
+func ReadTest(excelfile, sheetname string) (rowmaps []map[string]string) {
 	// open file
-	f, err := excelize.OpenFile(path)
+	tools.InfoLogger.Printf("Start Processing File: %s ,Sheet: %s", excelfile, sheetname)
+	f, err := excelize.OpenFile(excelfile)
 	if err != nil {
-		fmt.Println(err)
+		tools.ErrorLogger.Fatalln(err)
 	}
 	// headline type
 	headline := make(map[int]string)
 	tmprows, tmperr := f.Rows(sheetname)
 	if tmperr != nil {
-		fmt.Println(tmperr)
+		tools.ErrorLogger.Fatalln(tmperr)
 	}
 	headrow, headerr := tmprows.Columns()
 	if headerr != nil {
-		fmt.Println(headerr)
+		tools.ErrorLogger.Fatalln(headerr)
 	}
 	for k, v := range headrow {
 		headline[k] = v
 	}
+	tools.InfoLogger.Println("HeadLine:",headline)
 	// iter all rows
 	//var rowmaps []map[string]string
 	rows, err := f.GetRows(sheetname)
 	if err != nil {
-		fmt.Println(err)
+		tools.ErrorLogger.Fatalln(err)
 	}
 	for _, row := range rows {
 		rowmap := make(map[string]string)
