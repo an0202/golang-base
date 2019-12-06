@@ -1,3 +1,10 @@
+///**
+// * @Author: jie.an
+// * @Description:
+// * @File:  cmd-test.go
+// * @Version: 1.0.0
+// * @Date: 2019/11/23 22:06
+// */
 package cmd
 
 import (
@@ -11,8 +18,8 @@ import (
 var (
 	excelFile *string
 	sheetName *string
-	region *string
-	method *string
+	region    *string
+	method    *string
 	help      *bool
 )
 
@@ -24,7 +31,7 @@ func init() {
 	help = flag.Bool("h", false, "Print This Message")
 }
 
-func EC2addtags(){
+func EC2addtags() {
 	// Parse flag
 	flag.Parse()
 	if *help == true {
