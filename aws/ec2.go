@@ -30,7 +30,7 @@ type EBSDetail struct {
 }
 
 //Cretate AMI For EC2
-func CreateImage(sess *session.Session, instanceid string) {
+func CreateImage(sess *session.Session, instanceid, suffix string) {
 	// Create an EC2 service client.
 	svc := ec2.New(sess)
 	// Get instance tag name
@@ -43,16 +43,32 @@ func CreateImage(sess *session.Session, instanceid string) {
 		},
 	})
 	if err != nil {
-		tools.ErrorLogger.Println(err)
+		tools.WarningLogger.Println(err)
+		return
 	}
 	if len(output.Tags) == 0 {
-		tools.ErrorLogger.Println("Instance Does Not Exist", instanceid)
+		tools.WarningLogger.Printf("Instance : %s Does Not Exist Or Instance Does Not Have A Name Tag.\n", instanceid)
 		return
 	}
 	var aminame string
-	for _, tag := range output.Tags {
-		if *tag.Key == "Name" {
-			aminame = *tag.Value + time.Now().Format("-20060102150405")
+	switch suffix {
+	case "final":
+		for _, tag := range output.Tags {
+			if *tag.Key == "Name" {
+				aminame = *tag.Value + "-FINALBACKUP"
+			}
+		}
+	case "date":
+		for _, tag := range output.Tags {
+			if *tag.Key == "Name" {
+				aminame = *tag.Value + time.Now().Format("-20060102")
+			}
+		}
+	default:
+		for _, tag := range output.Tags {
+			if *tag.Key == "Name" {
+				aminame = *tag.Value + "-" + suffix
+			}
 		}
 	}
 	//Create ami
@@ -63,9 +79,10 @@ func CreateImage(sess *session.Session, instanceid string) {
 		Name:       aws.String(aminame),
 	})
 	if err != nil {
-		tools.ErrorLogger.Println(err)
+		tools.WarningLogger.Println(err)
+		return
 	}
-	tools.InfoLogger.Println("Create AMI", *ami.ImageId)
+	tools.InfoLogger.Printf("Create AMI %s (%s) Successfully.", *ami.ImageId, aminame)
 }
 
 // EC2Instance retype from excel

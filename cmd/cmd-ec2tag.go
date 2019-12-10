@@ -15,15 +15,15 @@ import (
 	"os"
 )
 
-var (
-	excelFile *string
-	sheetName *string
-	region    *string
-	method    *string
-	help      *bool
-)
+//var (
+//	excelFile *string
+//	sheetName *string
+//	region    *string
+//	method    *string
+//	help      *bool
+//)
 
-func init() {
+func inittag() {
 	excelFile = flag.String("file", "tags.xlsx", "Source ExcelFile To Be Processed")
 	sheetName = flag.String("sheet", "EC2", "Sheet In ExcelFile To Be Processed")
 	region = flag.String("region", "cn-north-1", "AWS Region")
@@ -32,6 +32,7 @@ func init() {
 }
 
 func EC2addtags() {
+	inittag()
 	// Parse flag
 	flag.Parse()
 	if *help == true {

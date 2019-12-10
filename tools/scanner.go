@@ -61,3 +61,29 @@ func PrintNRecord(srcFile string, N int) {
 		lineCount++
 	}
 }
+
+// GetRecords return a list which value read line by line from a file.
+func GetRecords(srcFile string) []string {
+	// Print Time Duration
+	defer TimeTrack(time.Now(), "GetRecords")
+	// Open File
+	inputFile, inputError := os.OpenFile(srcFile, os.O_RDONLY, 0666)
+	if inputError != nil {
+		ErrorLogger.Fatalln("Error While Open File :", inputError)
+	}
+	defer inputFile.Close()
+	// Init Scanner
+	scanner := bufio.NewScanner(inputFile)
+	buf := make([]byte, 4*1024)
+	scanner.Buffer(buf, 10*1024)
+	var values []string
+	// Count
+	for scanner.Scan() {
+		values = append(values, scanner.Text())
+	}
+	if err := scanner.Err(); err != nil {
+		ErrorLogger.Fatalln(err)
+	}
+	InfoLogger.Println("Value List:", values)
+	return values
+}

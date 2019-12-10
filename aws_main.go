@@ -1,15 +1,16 @@
 package main
 
-import "golang-base/aws"
+import "golang-base/cmd"
 
 func main() {
 	// get policy
 	//var headerline = []interface{}{"GroupName", "VpcId", "GroupId", "Protocol", "Source", "FromPort", "ToPort"}
-	sess := aws.InitSession("cn-north-1")
+	//sess := aws.InitSession("cn-north-1")
 	//a := aws.GetSGPolicys(sess)
 	//excel.CreateFile("C:\\Users\\jie.an\\Desktop\\test.xlsx", "test")
-	//excel.SetHeaderLine("C:\\Users\\jie.an\\Desktop\\test.xlsx", "test", headerline)
-	//excel.SetStructRows("C:\\Users\\jie.an\\Desktop\\test.xlsx", "test", a)
+	//excel.CreateFile("/mnt/c/Users/jie.an/Desktop/output.xlsx", "test")
+	//excel.SetHeaderLine("/mnt/c/Users/jie.an/Desktop/output.xlsx", "test", headerline)
+	//excel.SetStructRows("/mnt/c/Users/jie.an/Desktop/output.xlsx", "test", a)
 
 	//// create tag for ec2
 	//var InstanceIds = []string{"i-03177f7cffb8462be"}
@@ -23,5 +24,6 @@ func main() {
 	//cmd.EBSaddtags()
 
 	//CreateImage
-	aws.CreateImage(sess, "i-03177f7cffb8462be")
+	//aws.CreateImage(sess, "i-03177f7cffb8462be")
+	cmd.EC2CreateAMI()
 }
