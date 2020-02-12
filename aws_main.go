@@ -1,17 +1,24 @@
 package main
 
-import "golang-base/cmd"
+import (
+	"golang-base/aws"
+	"golang-base/excel"
+)
 
 func main() {
 	// get policy
-	//var headerline = []interface{}{"GroupName", "VpcId", "GroupId", "Protocol", "Source", "FromPort", "ToPort"}
-	//sess := aws.InitSession("cn-north-1")
-	//a := aws.GetSGPolicys(sess)
-	//excel.CreateFile("C:\\Users\\jie.an\\Desktop\\test.xlsx", "test")
-	//excel.CreateFile("/mnt/c/Users/jie.an/Desktop/output.xlsx", "test")
-	//excel.SetHeaderLine("/mnt/c/Users/jie.an/Desktop/output.xlsx", "test", headerline)
-	//excel.SetStructRows("/mnt/c/Users/jie.an/Desktop/output.xlsx", "test", a)
+	var headerline = []interface{}{"GroupName", "VpcId", "GroupId", "Protocol", "Source", "FromPort", "ToPort"}
+	sess := aws.InitSession("cn-north-1")
 
+	//a := aws.GetSGPolicys(sess)
+	//excel.CreateFile("/mnt/c/Users/jie.an/Desktop/output.xlsx", "NULL")
+	//excel.SetHeaderLine("/mnt/c/Users/jie.an/Desktop/output.xlsx", "SecurityGroup", headerline)
+	//excel.SetStructRows("/mnt/c/Users/jie.an/Desktop/output.xlsx", "SecurityGroup", a)
+	// Get Instances
+	elasticachlist := aws.ListElastiCache(sess)
+	excel.CreateFile("/mnt/c/Users/jie.an/Desktop/output.xlsx", "EC2")
+	excel.SetHeaderLine("/mnt/c/Users/jie.an/Desktop/output.xlsx", "EC2", headerline)
+	excel.SetListRows("/mnt/c/Users/jie.an/Desktop/output.xlsx", "EC2", elasticachlist)
 	//// create tag for ec2
 	//var InstanceIds = []string{"i-03177f7cffb8462be"}
 	//var tagsmap = map[string]string{
@@ -25,5 +32,8 @@ func main() {
 
 	//CreateImage
 	//aws.CreateImage(sess, "i-03177f7cffb8462be")
-	cmd.EC2CreateAMI()
+	//
+	// Get snapshots
+	//accountid := aws.GetAccountId(sess)
+	//aws.ListSnapshots(sess, accountid)
 }

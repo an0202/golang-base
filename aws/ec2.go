@@ -12,6 +12,8 @@ import (
 	"golang-base/tools"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws/awserr"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -301,4 +303,135 @@ func EC2DeleteTags(sess *session.Session, instance EC2InstanceDetail) {
 	if err != nil {
 		tools.WarningLogger.Println(err)
 	}
+}
+
+//List Snapshot
+func ListSnapshots(sess *session.Session, accountid string) {
+	// Create an EC2 service client.
+	svc := ec2.New(sess)
+	// Get instance tag name
+	output, err := svc.DescribeSnapshots(&ec2.DescribeSnapshotsInput{
+		OwnerIds: []*string{aws.String(accountid)},
+	})
+	if err != nil {
+		tools.WarningLogger.Println(err)
+		return
+	}
+	for _, snapshot := range output.Snapshots {
+		fmt.Println(*snapshot.SnapshotId, *snapshot.Description)
+	}
+	//tools.InfoLogger.Println(&output)
+}
+
+//List AMI
+func ListAMIs(sess *session.Session) {
+	// Create an EC2 service client.
+	svc := ec2.New(sess)
+	// Get instance tag name
+	output, err := svc.DescribeImages(&ec2.DescribeImagesInput{
+		Owners: []*string{aws.String("self")},
+	})
+	if err != nil {
+		tools.WarningLogger.Println(err)
+		return
+	}
+	for _, image := range output.Images {
+		fmt.Println(*image.ImageId, *image.Name)
+	}
+	//tools.InfoLogger.Println(&output)
+}
+
+//List Volumes
+func ListVolumes(sess *session.Session) {
+	// Create an EC2 service client.
+	svc := ec2.New(sess)
+	// Get instance tag name
+	output, err := svc.DescribeVolumes(&ec2.DescribeVolumesInput{
+		DryRun: aws.Bool(false),
+	})
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+		return
+	}
+	for _, volume := range output.Volumes {
+		fmt.Println(*volume.VolumeId, *volume.State)
+	}
+	//tools.InfoLogger.Println(&output)
+}
+
+//List Instances
+func ListInstances(sess *session.Session) (InstanceList [][]interface{}) {
+	// Create an EC2 service client.
+	svc := ec2.New(sess)
+	// Get instance tag name
+	output, err := svc.DescribeInstances(&ec2.DescribeInstancesInput{
+		DryRun: aws.Bool(false),
+	})
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+	}
+	for _, reservation := range output.Reservations {
+		for _, instance := range reservation.Instances {
+			var Instance []interface{}
+			var platform, rolearn, instancename string
+			if instance.Platform != nil {
+				platform = *instance.Platform
+			} else {
+				platform = "linux"
+			}
+			if instance.IamInstanceProfile == nil {
+				rolearn = "N/A"
+			} else {
+				rolearn = *instance.IamInstanceProfile.Arn
+			}
+			//handle securitygroups
+			var sgs, tags []string
+			if len(instance.SecurityGroups) == 0 {
+				sgs = append(sgs, "N/A")
+			} else {
+				for _, sg := range instance.SecurityGroups {
+					sgs = append(sgs, *sg.GroupId+*sg.GroupName)
+				}
+			}
+			//handle tags
+			if len(instance.Tags) == 0 {
+				tags = append(tags, "N/A")
+			} else {
+				for _, tag := range instance.Tags {
+					if *tag.Key == "Name" {
+						instancename = *tag.Value
+					}
+					tags = append(tags, *tag.Key+":"+*tag.Value)
+				}
+				if len(instancename) == 0 {
+					instancename = "N/A"
+				}
+			}
+			Instance = append(Instance, instancename, *instance.InstanceId, *instance.InstanceType, platform, *instance.State.Name, *instance.VpcId,
+				rolearn, *instance.SubnetId, *instance.KeyName, sgs, tags)
+			InstanceList = append(InstanceList, Instance)
+		}
+	}
+	//for _, i := range InstanceList {
+	//	fmt.Println(i)
+	//}
+	return InstanceList
 }

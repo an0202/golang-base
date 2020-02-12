@@ -27,6 +27,7 @@ func CreateFile(path, sheetname string) {
 	fmt.Println("Create New File", path, sheetname)
 }
 
+// Set Rows From Golang Struct Type
 func SetStructRows(path, sheetname string, rows []interface{}) {
 	f, err := excelize.OpenFile(path)
 	if err != nil {
@@ -54,6 +55,28 @@ func SetStructRows(path, sheetname string, rows []interface{}) {
 	}
 }
 
+// Set Rows From Golang List
+func SetListRows(path, sheetname string, rows [][]interface{}) {
+	f, err := excelize.OpenFile(path)
+	if err != nil {
+		fmt.Println(err)
+	}
+	if f.GetSheetIndex(sheetname) == 0 {
+		f.NewSheet(sheetname)
+	}
+	for index, rowList := range rows {
+		err := f.SetSheetRow(sheetname, "A"+strconv.Itoa(index+2), &rowList)
+		if err != nil {
+			fmt.Println(err, "aaaa")
+		}
+	}
+	err = f.Save()
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+// SetHeaderLine From A List
 func SetHeaderLine(path, sheetname string, HeaderLine []interface{}) {
 	f, err := excelize.OpenFile(path)
 	if err != nil {
@@ -66,6 +89,15 @@ func SetHeaderLine(path, sheetname string, HeaderLine []interface{}) {
 	if err != nil {
 		fmt.Println(err)
 	}
+	// Set Cell Style
+	// https://xuri.me/excelize/zh-hans/cell.html#SetCellStyle
+	// https://xuri.me/excelize/zh-hans/style.html#shading
+	style, err := f.NewStyle(`{"font":{"bold":true,"family":"Microsoft YaHei Light","size":12,"color":"#000000"},
+	"fill":{"type":"pattern","color":["#F9F900"],"pattern":1}}`)
+	if err != nil {
+		println(err.Error())
+	}
+	err = f.SetCellStyle(sheetname, "A1", "J1", style)
 	err = f.Save()
 	if err != nil {
 		fmt.Println(err)

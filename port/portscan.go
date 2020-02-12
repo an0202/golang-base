@@ -74,7 +74,7 @@ func (ps *PortScanner) descriebPorts() {
 func main() {
 	tools.InfoLogger.Println("Task Start")
 	ps := new(PortScanner)
-	ps.ipAddr = "180.76.166.25"
+	ps.ipAddr = "10.250.101.252"
 	ps.startPort = 1
 	ps.endPort = 65535
 	ps.Check(ps.ipAddr, ps.startPort, ps.endPort)
