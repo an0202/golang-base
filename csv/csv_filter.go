@@ -8,17 +8,18 @@ import (
 	"math"
 	"os"
 	"regexp"
+	"strings"
 )
 
 var (
 	inputFile *string
-	accountID *string
+	accountIDs *string
 	help      *bool
 )
 
 func init() {
 	inputFile = flag.String("file", "beijing.csv", "Source File To Be Processed")
-	accountID = flag.String("id", "216745712527", "Linked Account ID")
+	accountIDs = flag.String("id", "405718244235,0123456789", "Linked Account IDs Split With \",\"")
 	help = flag.Bool("h", false, "Print This Message")
 }
 
@@ -83,8 +84,8 @@ func main() {
 			if (baseRateCount != 0) && (lineCount%baseRateCount == 0) {
 				tools.InfoLogger.Println("Processing , Processed Rows :", lineCount)
 			}
-			match, _ := regexp.MatchString(*accountID, record[1])
-			if match == true {
+			accountList := strings.Split(*accountIDs,",")
+			if tools.StringFind(accountList, record[2]) {
 				operateMatch, _:= regexp.MatchString(`.*Run.*`, record[10])
 				if operateMatch == true {
 					resourceMatch, _ := regexp.MatchString(`^i-.*`, record[21])
