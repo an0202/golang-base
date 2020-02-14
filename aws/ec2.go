@@ -10,6 +10,7 @@ package aws
 import (
 	"fmt"
 	"golang-base/tools"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -108,6 +109,54 @@ func EC2InstanceMarshal(ec2instancedetail map[string]string) (instance EC2Instan
 		tools.ErrorLogger.Fatalln("Missing InstanceID:", ec2instancedetail)
 	}
 	return instance
+}
+
+// GetTags return ec2 tags information
+// allTags : current tags for ec2
+// queryResult : instanceId and the returned value of the queried tag key
+func EC2GetTags(sess *session.Session, instance EC2InstanceDetail, queryKeys string) (allTags map[string]string,queryResult []interface{}){
+	// instance reMarshal to aws ec2 type
+
+	// Create an EC2 service client.
+	svc := ec2.New(sess)
+
+	// whether to override tag when tag exists
+	// Get current ec2 Tags and modify
+	curTags, err := svc.DescribeTags(&ec2.DescribeTagsInput{
+		DryRun: aws.Bool(false),
+		Filters: []*ec2.Filter{
+			{
+				Name:   aws.String("resource-id"),
+				Values: []*string{aws.String(instance.InstanceID)},
+			},
+		},
+	})
+	if err != nil {
+		tools.WarningLogger.Fatal(err)
+	}
+	// current ec2 tags key map
+	if len(curTags.Tags) != 0 {
+		allTags = make(map[string]string)
+		for _, v := range curTags.Tags {
+			allTags[*v.Key] = *v.Value
+		}
+		fmt.Println("Cur ec2 tag key list:", allTags)
+	}
+	// queryResult with instanceid and value of the queried tag key
+	queryResult = append(queryResult, instance.InstanceID)
+	if tools.StringFind(strings.Split(queryKeys, ","), "all") {
+		//todo print ec2 tag when querykey is all
+	} else {
+		for _ , queryKey := range strings.Split(queryKeys, ",") {
+			if _,ok := allTags[queryKey] ; ok {
+				queryResult = append(queryResult, allTags[queryKey])
+			} else {
+				queryResult = append(queryResult, "N/A")
+			}
+		}
+	}
+	fmt.Println("Query Result For Tags: ", queryResult)
+	return allTags, queryResult
 }
 
 // CreateTags from excel with skip exist tag key

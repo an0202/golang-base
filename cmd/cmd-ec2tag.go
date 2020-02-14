@@ -14,6 +14,7 @@ import (
 	"golang-base/excel"
 	"golang-base/tools"
 	"os"
+	"strings"
 )
 
 //var (
@@ -28,12 +29,13 @@ func initTag() {
 	excelFile = flag.String("file", "tags.xlsx", "Source ExcelFile To Be Processed")
 	sheetName = flag.String("sheet", "EC2", "Sheet In ExcelFile To Be Processed")
 	region = flag.String("region", "cn-north-1", "Used For Init A AWS Default Session")
-	method = flag.String("m", "add", "add/del Tags")
+	method = flag.String("m", "get", "add/del/get Tags")
+	tags = flag.String("tags", "Name,Env,Project", "Require: method = get,Get Specific Tags From Resource And Write To Excel")
 	overide = flag.Bool("o", true, "Overide Exist Tags")
 	help = flag.Bool("h", false, "Print This Message")
 }
 
-func EC2addTags() {
+func EC2Tags() {
 	initTag()
 	// Parse flag
 	flag.Parse()
@@ -77,6 +79,39 @@ func EC2addTags() {
 			b := aws.EC2InstanceMarshal(v)
 			aws.EC2DeleteTags(sess, b)
 		}
+	case "get":
+		defaultSess := aws.InitSession(*region)
+		se := new(aws.Session)
+		a := excel.ReadToMaps(*excelFile, *sheetName)
+		var results [][]interface{}
+		for _, v := range a {
+			b := aws.EC2InstanceMarshal(v)
+			if b.AWSProfile != "" && b.Region != "" {
+				// Use the old session when the current resource and the previous resource belong to the same account and region
+				if b.AWSProfile == se.UsedAwsProfile && b.Region == se.UsedRegion {
+					//fmt.Println(se.Sess.Config.Credentials)
+					_, result := aws.EC2GetTags(se.Sess, b, *tags)
+					results = append(results, result)
+				} else {
+					// create a new session
+					se.Sess = se.InitSessionWithAWSProfile(b.Region,b.AWSProfile)
+					// fmt.Println(se.Sess.Config.Credentials)
+					_, result := aws.EC2GetTags(se.Sess, b, *tags)
+					results = append(results, result)
+				}
+			} else {
+				tools.InfoLogger.Println("Use Default Session")
+				_, result := aws.EC2GetTags(defaultSess, b, *tags)
+				results = append(results, result)
+			}
+		}
+		var headerline = []interface{}{"ResourceID"}
+		for _, v := range strings.Split(*tags,",") {
+			headerline = append(headerline, v)
+		}
+		excel.CreateFile("output-"+*excelFile,*sheetName)
+		excel.SetHeaderLine("output-"+*excelFile,*sheetName, headerline)
+		excel.SetListRows("output-"+*excelFile,*sheetName, results)
 	default:
 		flag.Usage()
 		tools.ErrorLogger.Fatalln("Illegal Method:", *method)

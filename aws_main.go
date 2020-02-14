@@ -17,7 +17,7 @@ func main() {
 	//excel.SetHeaderLine("/mnt/c/Users/jie.an/Desktop/output.xlsx", "EC2", headerline)
 	//excel.SetListRows("/mnt/c/Users/jie.an/Desktop/output.xlsx", "EC2", elasticachlist)
 	//// 5. Create Tag for ec2
-	cmd.EC2addTags()
+	cmd.EC2Tags()
 	//fmt.Println(tagsmap[key1])
 	//a := excel.ReadTest("C:\\Users\\jie.an\\Desktop\\tags2.xlsx", "EC2")
 	//cmd.EBSaddtags()

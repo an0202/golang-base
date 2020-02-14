@@ -19,6 +19,7 @@ var (
 	excelFile *string
 	sheetName *string
 	method    *string
+	tags 	  *string
 )
 
 //ec2 ami

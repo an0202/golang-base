@@ -67,7 +67,7 @@ func SetListRows(path, sheetname string, rows [][]interface{}) {
 	for index, rowList := range rows {
 		err := f.SetSheetRow(sheetname, "A"+strconv.Itoa(index+2), &rowList)
 		if err != nil {
-			fmt.Println(err, "aaaa")
+			fmt.Println(err)
 		}
 	}
 	err = f.Save()
