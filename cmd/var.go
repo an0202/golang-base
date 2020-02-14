@@ -11,6 +11,7 @@ package cmd
 var (
 	region *string
 	help   *bool
+	overide *bool
 )
 
 // ec2tag

@@ -22,6 +22,7 @@ import (
 type EC2InstanceDetail struct {
 	InstanceID          string
 	Region              string
+	AWSProfile			string
 	Tags                map[string]string
 	BlockDeviceMappings []EBSDetail
 }
@@ -97,6 +98,8 @@ func EC2InstanceMarshal(ec2instancedetail map[string]string) (instance EC2Instan
 				instance.InstanceID = ec2instancedetail["InstanceID"]
 			case "Region":
 				instance.Region = ec2instancedetail["Region"]
+			case "AWS_PROFILE":
+				instance.AWSProfile = ec2instancedetail["AWS_PROFILE"]
 			default:
 				instance.Tags[k] = v
 			}
@@ -108,14 +111,14 @@ func EC2InstanceMarshal(ec2instancedetail map[string]string) (instance EC2Instan
 }
 
 // CreateTags from excel with skip exist tag key
-func EC2CreateTags(sess *session.Session, instance EC2InstanceDetail) {
+func EC2CreateTags(sess *session.Session, instance EC2InstanceDetail, override bool) {
 	// instance reMarshal to aws ec2 type
 	var resourceIDs = []string{instance.InstanceID}
 
 	// Create an EC2 service client.
 	svc := ec2.New(sess)
 	// Get EBSid
-	ebsmap, err := svc.DescribeInstanceAttribute(&ec2.DescribeInstanceAttributeInput{
+	ebsMap, err := svc.DescribeInstanceAttribute(&ec2.DescribeInstanceAttributeInput{
 		DryRun:     aws.Bool(false),
 		InstanceId: aws.String(instance.InstanceID),
 		Attribute:  aws.String("blockDeviceMapping"),
@@ -123,7 +126,7 @@ func EC2CreateTags(sess *session.Session, instance EC2InstanceDetail) {
 	if err != nil {
 		tools.WarningLogger.Fatal(err)
 	}
-	for _, v := range ebsmap.BlockDeviceMappings {
+	for _, v := range ebsMap.BlockDeviceMappings {
 		var ebs = EBSDetail{
 			VolumeId: *v.Ebs.VolumeId,
 			Status:   *v.Ebs.Status,
@@ -131,55 +134,59 @@ func EC2CreateTags(sess *session.Session, instance EC2InstanceDetail) {
 		resourceIDs = append(resourceIDs, ebs.VolumeId)
 	}
 	tools.InfoLogger.Println("Add Tags To :", resourceIDs)
-	// Get Tag and modify
-	curTags, err := svc.DescribeTags(&ec2.DescribeTagsInput{
-		DryRun: aws.Bool(false),
-		Filters: []*ec2.Filter{
-			{
-				Name:   aws.String("resource-id"),
-				Values: []*string{aws.String(instance.InstanceID)},
-			},
-		},
-	})
-	if err != nil {
-		tools.WarningLogger.Fatal(err)
-	}
-	// key list
-	var curTagsKeyList []string
-	if len(curTags.Tags) != 0 {
-		for _, v := range curTags.Tags {
-			curTagsKeyList = append(curTagsKeyList, *v.Key)
+	var tags []*ec2.Tag
+	// whether to override tag when tag exists
+	if override {
+		// override
+		for tagKey, tagValue := range instance.Tags {
+			tags = append(tags, &ec2.Tag{
+				Key:   aws.String(tagKey),
+				Value: aws.String(tagValue),
+			})
 		}
-		fmt.Println("Cur tag key  list:", curTagsKeyList)
-	}
-	for preTagKey, preTagValue := range instance.Tags {
-		exist := tools.StringFind(curTagsKeyList, preTagKey)
-		switch exist {
-		case true:
-			fmt.Println("exist abort")
-		case false:
-			curTags.Tags = append(curTags.Tags, &ec2.TagDescription{
-				Key:   aws.String(preTagKey),
-				Value: aws.String(preTagValue),
+	} else {
+		// Get current ec2 Tags and modify
+		curTags, err := svc.DescribeTags(&ec2.DescribeTagsInput{
+			DryRun: aws.Bool(false),
+			Filters: []*ec2.Filter{
+				{
+					Name:   aws.String("resource-id"),
+					Values: []*string{aws.String(instance.InstanceID)},
+				},
+			},
+		})
+		if err != nil {
+			tools.WarningLogger.Fatal(err)
+		}
+		// current ec2 Tags key list
+		var curTagsKeyList []string
+		if len(curTags.Tags) != 0 {
+			for _, v := range curTags.Tags {
+				curTagsKeyList = append(curTagsKeyList, *v.Key)
+			}
+			fmt.Println("Cur ec2 tag key list:", curTagsKeyList)
+		}
+		//
+		for preTagKey, preTagValue := range instance.Tags {
+			exist := tools.StringFind(curTagsKeyList, preTagKey)
+			switch exist {
+			case true:
+				fmt.Println("tag key exist ,abort")
+			case false:
+				curTags.Tags = append(curTags.Tags, &ec2.TagDescription{
+					Key:   aws.String(preTagKey),
+					Value: aws.String(preTagValue),
+				})
+			}
+		}
+		for _, curTag := range curTags.Tags {
+			tags = append(tags, &ec2.Tag{
+				Key:   aws.String(*curTag.Key),
+				Value: aws.String(*curTag.Value),
 			})
 		}
 	}
-	var tags []*ec2.Tag
-
-	//// overide = true
-	//	for tagKey, tagValue := range instance.Tags {
-	//		tags = append(tags, &ec2.Tag{
-	//			Key:   aws.String(tagKey),
-	//			Value: aws.String(tagValue),
-	//		})
-	//	}
-	for _, curtag := range curTags.Tags {
-		tags = append(tags, &ec2.Tag{
-			Key:   aws.String(*curtag.Key),
-			Value: aws.String(*curtag.Value),
-		})
-	}
-	fmt.Println(tags)
+	tools.InfoLogger.Println("Create Tags:",tags)
 	//Create tag
 	_, err = svc.CreateTags(&ec2.CreateTagsInput{
 		DryRun:    aws.Bool(false),

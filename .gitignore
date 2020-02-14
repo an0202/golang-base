@@ -18,6 +18,7 @@ __debug_bin
 *.csv
 *.log
 *.json
+*.xlsx
 
 
 #IDE

@@ -13,7 +13,29 @@ import (
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
 )
 
-func ReadTest(excelfile, sheetname string) (rowmaps []map[string]string) {
+//
+//ReadToMaps read excel file line by line and return data with map in a list
+//
+//Excel:
+//
+//	A     B     C
+//
+//1  Name   Age   Sex
+//
+//2  Alice  18    Female
+//
+//3  Bob    22    Male
+//
+//ReturnData:
+//[
+//
+//	{"Name":"Alice","Age":"18","Sex":"Female"},
+//	{"Name":"Bob","Age":"22","Sex":"Male"}
+//
+//]
+//
+
+func ReadToMaps(excelfile, sheetname string) (rowmaps []map[string]string) {
 	// open file
 	tools.InfoLogger.Printf("Start Processing File: %s ,Sheet: %s", excelfile, sheetname)
 	f, err := excelize.OpenFile(excelfile)
@@ -43,6 +65,7 @@ func ReadTest(excelfile, sheetname string) (rowmaps []map[string]string) {
 	for _, row := range rows {
 		rowmap := make(map[string]string)
 		for k, v := range row {
+			//skip head line (title)
 			if row[k] == headline[k] {
 				continue
 			} else {
@@ -53,5 +76,6 @@ func ReadTest(excelfile, sheetname string) (rowmaps []map[string]string) {
 			rowmaps = append(rowmaps, rowmap)
 		}
 	}
+	// return rowdata in map with out headeline (title)
 	return rowmaps
 }
