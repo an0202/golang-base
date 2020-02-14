@@ -17,12 +17,12 @@ var (
 )
 
 func init() {
-	inputFile = flag.String("file", "origin.csv", "Source File To Be Processed")
-	accountID = flag.String("id", "869869223565", "Linked Account ID")
+	inputFile = flag.String("file", "beijing.csv", "Source File To Be Processed")
+	accountID = flag.String("id", "216745712527", "Linked Account ID")
 	help = flag.Bool("h", false, "Print This Message")
 }
 
-// RateOfProgress is a counter for progeress, such as a progress bar
+// RateOfProgress is a counter for progress, such as a progress bar
 func RateOfProgress(inputFile string) int {
 	lineCount := tools.CountRecord(inputFile)
 	if lineCount > 100000 {
@@ -55,7 +55,7 @@ func main() {
 	// init csv reader
 	reader := csv.NewReader(inputCSV)
 	// out put message to output.csv
-	outputCSV, outputError := os.OpenFile("csv_fliter_output.csv", os.O_WRONLY|os.O_CREATE, 0666)
+	outputCSV, outputError := os.OpenFile("output.csv", os.O_WRONLY|os.O_CREATE, 0666)
 	if outputError != nil {
 		tools.ErrorLogger.Fatalln(outputError)
 		return
@@ -83,9 +83,15 @@ func main() {
 			if (baseRateCount != 0) && (lineCount%baseRateCount == 0) {
 				tools.InfoLogger.Println("Processing , Processed Rows :", lineCount)
 			}
-			match, _ := regexp.MatchString(*accountID, record[2])
+			match, _ := regexp.MatchString(*accountID, record[1])
 			if match == true {
-				writer.Write(record)
+				operateMatch, _:= regexp.MatchString(`.*Run.*`, record[10])
+				if operateMatch == true {
+					resourceMatch, _ := regexp.MatchString(`^i-.*`, record[21])
+					if resourceMatch == true {
+						writer.Write(record)
+					}
+				}
 			}
 		}
 		lineCount++

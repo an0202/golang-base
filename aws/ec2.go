@@ -107,6 +107,7 @@ func EC2InstanceMarshal(ec2instancedetail map[string]string) (instance EC2Instan
 	return instance
 }
 
+// CreateTags from excel with skip exist tag key
 func EC2CreateTags(sess *session.Session, instance EC2InstanceDetail) {
 	// instance reMarshal to aws ec2 type
 	var resourceIDs = []string{instance.InstanceID}
