@@ -9,6 +9,7 @@ package excel
 
 import (
 	"fmt"
+	"golang-base/tools"
 	"reflect"
 	"strconv"
 
@@ -24,7 +25,7 @@ func CreateFile(path, sheetname string) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println("Create New File", path, sheetname)
+	tools.InfoLogger.Println("Create New File", path, sheetname)
 }
 
 // Set Rows From Golang Struct Type
@@ -97,7 +98,7 @@ func SetHeaderLine(path, sheetname string, HeaderLine []interface{}) {
 	if err != nil {
 		println(err.Error())
 	}
-	err = f.SetCellStyle(sheetname, "A1", "J1", style)
+	err = f.SetCellStyle(sheetname, "A1", "O1", style)
 	err = f.Save()
 	if err != nil {
 		fmt.Println(err)

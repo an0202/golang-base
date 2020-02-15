@@ -113,7 +113,7 @@ func EC2InstanceMarshal(ec2instancedetail map[string]string) (instance EC2Instan
 
 // GetTags return ec2 tags information
 // allTags : current tags for ec2
-// queryResult : instanceId and the returned value of the queried tag key
+// queryResult : instanceId and the returned value of the queried tag key in list
 func EC2GetTags(sess *session.Session, instance EC2InstanceDetail, queryKeys string) (allTags map[string]string,queryResult []interface{}){
 	// instance reMarshal to aws ec2 type
 
@@ -143,16 +143,11 @@ func EC2GetTags(sess *session.Session, instance EC2InstanceDetail, queryKeys str
 		fmt.Println("Cur ec2 tag key list:", allTags)
 	}
 	// queryResult with instanceid and value of the queried tag key
-	queryResult = append(queryResult, instance.InstanceID)
-	if tools.StringFind(strings.Split(queryKeys, ","), "all") {
-		//todo print ec2 tag when querykey is all
-	} else {
-		for _ , queryKey := range strings.Split(queryKeys, ",") {
-			if _,ok := allTags[queryKey] ; ok {
-				queryResult = append(queryResult, allTags[queryKey])
-			} else {
-				queryResult = append(queryResult, "N/A")
-			}
+	for _ , queryKey := range strings.Split(queryKeys, ",") {
+		if _,ok := allTags[queryKey] ; ok {
+			queryResult = append(queryResult, allTags[queryKey])
+		} else {
+			queryResult = append(queryResult, "N/A")
 		}
 	}
 	fmt.Println("Query Result For Tags: ", queryResult)
@@ -448,7 +443,7 @@ func ListInstances(sess *session.Session) (InstanceList [][]interface{}) {
 	for _, reservation := range output.Reservations {
 		for _, instance := range reservation.Instances {
 			var Instance []interface{}
-			var platform, rolearn, instancename string
+			var platform, rolearn, instancename ,keypair string
 			if instance.Platform != nil {
 				platform = *instance.Platform
 			} else {
@@ -459,31 +454,38 @@ func ListInstances(sess *session.Session) (InstanceList [][]interface{}) {
 			} else {
 				rolearn = *instance.IamInstanceProfile.Arn
 			}
+			if instance.KeyName == nil {
+				keypair = "N/A"
+			} else {
+				keypair = *instance.KeyName
+			}
 			//handle securitygroups
 			var sgs, tags []string
 			if len(instance.SecurityGroups) == 0 {
-				sgs = append(sgs, "N/A")
+				sgs = append(sgs, "N/A ")
 			} else {
 				for _, sg := range instance.SecurityGroups {
-					sgs = append(sgs, *sg.GroupId+*sg.GroupName)
+					sgs = append(sgs, *sg.GroupId+"("+*sg.GroupName+")"+" ")
 				}
 			}
 			//handle tags
 			if len(instance.Tags) == 0 {
-				tags = append(tags, "N/A")
+				tags = append(tags, "N/A ")
 			} else {
 				for _, tag := range instance.Tags {
 					if *tag.Key == "Name" {
 						instancename = *tag.Value
 					}
-					tags = append(tags, *tag.Key+":"+*tag.Value)
+					tags = append(tags, *tag.Key+":"+*tag.Value+" ")
 				}
 				if len(instancename) == 0 {
-					instancename = "N/A"
+					instancename = "N/A "
 				}
 			}
-			Instance = append(Instance, instancename, *instance.InstanceId, *instance.InstanceType, platform, *instance.State.Name, *instance.VpcId,
-				rolearn, *instance.SubnetId, *instance.KeyName, sgs, tags)
+			Instance = append(Instance, *reservation.OwnerId,*sess.Config.Region,instancename, *instance.InstanceId,
+				*instance.InstanceType, platform, *instance.State.Name, *instance.VpcId,
+				rolearn, *instance.SubnetId, keypair, sgs, tags)
+			//fmt.Println(Instance)
 			InstanceList = append(InstanceList, Instance)
 		}
 	}
