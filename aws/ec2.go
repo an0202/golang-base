@@ -482,6 +482,7 @@ func ListInstances(sess *session.Session) (InstanceList [][]interface{}) {
 					instancename = "N/A "
 				}
 			}
+			// todo: add ipAddress , if not exist should declare first
 			Instance = append(Instance, *reservation.OwnerId,*sess.Config.Region,instancename, *instance.InstanceId,
 				*instance.InstanceType, platform, *instance.State.Name, *instance.VpcId,
 				rolearn, *instance.SubnetId, keypair, sgs, tags)

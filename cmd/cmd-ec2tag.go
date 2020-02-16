@@ -109,7 +109,7 @@ func EC2Tags() {
 		for _, v := range strings.Split(*tags,",") {
 			headerline = append(headerline, v)
 		}
-		excel.CreateFile("output-"+*excelFile,*sheetName)
+		excel.CreateFile("output-"+*excelFile)
 		excel.SetHeaderLine("output-"+*excelFile,*sheetName, headerline)
 		excel.SetListRows("output-"+*excelFile,*sheetName, results)
 	default:

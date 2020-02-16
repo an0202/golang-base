@@ -1,6 +1,8 @@
 package main
 
-import "golang-base/cmd"
+import (
+    "golang-base/cmd"
+)
 
 func main() {
 	////1. get policy
@@ -36,3 +38,57 @@ func main() {
 	//excel.SetListRows("output.xlsx", "EC2", ec2)
     cmd.EC2()
 }
+
+
+
+////Functional Options
+//
+//var defaultStuffClient = stuffClient{
+//   retries: 3,
+//   timeout: 2,
+//}
+//type StuffClientOption func(*stuffClient)
+//
+//func WithRetries(r int) StuffClientOption {
+//   return func(o *stuffClient) {
+//       o.retries = r
+//   }
+//}
+//func WithTimeout(t int) StuffClientOption {
+//   return func(o *stuffClient) {
+//       o.timeout = t
+//   }
+//}
+//type StuffClient interface {
+//   DoStuff() error
+//}
+//type stuffClient struct {
+//   conn    Connection
+//   timeout int
+//   retries int
+//}
+//type Connection struct{}
+//func NewStuffClient(conn Connection, opts ...StuffClientOption) StuffClient {
+//   client := defaultStuffClient
+//   for _, o := range opts {
+//       o(&client)
+//   }
+//
+//   client.conn = conn
+//   return client
+//}
+//
+//func (c stuffClient) DoStuff() error {
+//   return nil
+//}
+//
+//// The Test
+//
+//func main() {
+//   x := NewStuffClient(Connection{})
+//   fmt.Println(x) // prints &{{} 2 3}
+//
+//   x = NewStuffClient(Connection{}, WithRetries(1))
+//   fmt.Println(x) // prints &{{} 2 1}
+//}
+

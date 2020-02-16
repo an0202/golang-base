@@ -18,14 +18,14 @@ import (
 
 var rowList []interface{}
 
-func CreateFile(path, sheetname string) {
+func CreateFile(path string) {
 	f := excelize.NewFile()
-	f.NewSheet(sheetname)
+
 	err := f.SaveAs(path)
 	if err != nil {
 		fmt.Println(err)
 	}
-	tools.InfoLogger.Println("Create New File", path, sheetname)
+	tools.InfoLogger.Println("Create New File", path)
 }
 
 // Set Rows From Golang Struct Type
@@ -67,6 +67,27 @@ func SetListRows(path, sheetname string, rows [][]interface{}) {
 	}
 	for index, rowList := range rows {
 		err := f.SetSheetRow(sheetname, "A"+strconv.Itoa(index+2), &rowList)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+	err = f.Save()
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+// Set Rows From Golang List V2 （Start Cell Can Be Specified）
+func SetListRowsV2(path, sheetname, startColumn string, startRow int, rows [][]interface{}) {
+	f, err := excelize.OpenFile(path)
+	if err != nil {
+		fmt.Println(err)
+	}
+	if f.GetSheetIndex(sheetname) == 0 {
+		f.NewSheet(sheetname)
+	}
+	for index, rowList := range rows {
+		err := f.SetSheetRow(sheetname, startColumn+strconv.Itoa(index+startRow), &rowList)
 		if err != nil {
 			fmt.Println(err)
 		}

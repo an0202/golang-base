@@ -24,7 +24,7 @@ import (
 //)
 
 func initEC2() {
-	excelFile = flag.String("f", "", "Source ExcelFile To Be Processed")
+	excelFile = flag.String("f", "query.xlsx", "Source ExcelFile To Be Processed")
 	sheetName = flag.String("sheet", "EC2", "Sheet In ExcelFile To Be Processed")
 	region = flag.String("region", "cn-north-1", "Used For Init A AWS Default Session")
 	method = flag.String("m", "get", "Get EC2 Instance")
@@ -44,14 +44,18 @@ func EC2() {
 	}
 	switch *method {
 	case "get":
-		excel.CreateFile("output.xlsx", "Default")
+		excel.CreateFile("output.xlsx")
 		var headerLine = []interface{}{"AccountId", "Region", "Name", "InstanceId", "InstanceType", "Platform", "State",
 			"VPCId","Role","SubnetId","KeyPair","SecurityGroups","Tags"}
+		// Total sheet , rowsNum is position for Total sheet written data
+		excel.SetHeaderLine("output.xlsx","Total", headerLine)
+		rowsNum := 1
 		// Get EC2 Instances From Excel (Excel Contains AWS_PROFILE And Region)
 		if *excelFile != "" {
 			se := new(aws.Session)
 			a := excel.ReadToMaps(*excelFile, *sheetName)
 			for _, v := range a {
+				//fmt.Println("RowsNumis:      ",rowsNum)
 				b := aws.EC2InstanceMarshal(v)
 				// create a new session
 				se.Sess = se.InitSessionWithAWSProfile(b.Region,b.AWSProfile)
@@ -62,23 +66,28 @@ func EC2() {
 					tools.InfoLogger.Printf("Found %d Instances In %s : %s \n", len(instances), b.AWSProfile,b.Region)
 					excel.SetHeaderLine("output.xlsx",outputSheetName, headerLine)
 					excel.SetListRows("output.xlsx", outputSheetName, instances)
+					// Write summary data to Total sheet
+					excel.SetListRowsV2("output.xlsx","Total","A",rowsNum+1,instances)
+					rowsNum += len(instances)
 				} else {
 					tools.InfoLogger.Printf("No EC2 Instnace In %s : %s \n", b.AWSProfile,b.Region)
 				}
 			}
 		} else {
+			// Does not read data from excel (used for export single account ec2 list)
 			defaultSess := aws.InitSession(*region)
 			instances := aws.ListInstances(defaultSess)
 			if len(instances) != 0 {
 				tools.InfoLogger.Printf("Found %d Instances In %s \n", len(instances),*region)
-				excel.SetHeaderLine("output.xlsx","Default", headerLine)
-				excel.SetListRows("output.xlsx","Default", instances)
+				excel.SetHeaderLine("output.xlsx","Total", headerLine)
+				excel.SetListRows("output.xlsx","Total", instances)
 			} else {
 				tools.InfoLogger.Printf("No EC2 Instnace In %s \n", *region)
 			}
 		}
 
 	default:
+		excel.CreateFile("output.xlsx")
 		flag.Usage()
 		tools.ErrorLogger.Fatalln("Illegal Method:", *method)
 	}
