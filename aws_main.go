@@ -1,7 +1,8 @@
 package main
 
 import (
-    "golang-base/cmd"
+    "fmt"
+    "golang-base/aws"
 )
 
 func main() {
@@ -36,7 +37,13 @@ func main() {
 	//excel.CreateFile("output.xlsx", "EC2")
 	//excel.SetHeaderLine("output.xlsx", "EC2", headerline)
 	//excel.SetListRows("output.xlsx", "EC2", ec2)
-    cmd.EC2()
+    //cmd.EC2()
+    sess := aws.InitSession("cn-north-1")
+    a := aws.ListAlarms(sess)
+    for _, alarm := range(a) {
+       fmt.Println(alarm)
+       fmt.Println("------")
+    }
 }
 
 
