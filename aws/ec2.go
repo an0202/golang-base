@@ -443,7 +443,7 @@ func ListInstances(sess *session.Session) (InstanceList [][]interface{}) {
 	for _, reservation := range output.Reservations {
 		for _, instance := range reservation.Instances {
 			var Instance []interface{}
-			var platform, rolearn, instancename ,keypair string
+			var platform, rolearn, instancename ,keypair, publicip string
 			if instance.Platform != nil {
 				platform = *instance.Platform
 			} else {
@@ -458,6 +458,11 @@ func ListInstances(sess *session.Session) (InstanceList [][]interface{}) {
 				keypair = "N/A"
 			} else {
 				keypair = *instance.KeyName
+			}
+			if instance.PublicIpAddress == nil{
+				publicip = "N/A"
+			} else {
+				publicip = *instance.PublicIpAddress
 			}
 			//handle securitygroups
 			var sgs, tags []string
@@ -482,10 +487,9 @@ func ListInstances(sess *session.Session) (InstanceList [][]interface{}) {
 					instancename = "N/A "
 				}
 			}
-			// todo: add ipAddress , if not exist should declare first
 			Instance = append(Instance, *reservation.OwnerId,*sess.Config.Region,instancename, *instance.InstanceId,
 				*instance.InstanceType, platform, *instance.State.Name, *instance.VpcId,
-				rolearn, *instance.SubnetId, keypair, sgs, tags)
+				rolearn, *instance.SubnetId, keypair, sgs, *instance.PrivateIpAddress, publicip, tags)
 			//fmt.Println(Instance)
 			InstanceList = append(InstanceList, Instance)
 		}

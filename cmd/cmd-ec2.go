@@ -46,7 +46,7 @@ func EC2() {
 	case "get":
 		excel.CreateFile("output.xlsx")
 		var headerLine = []interface{}{"AccountId", "Region", "Name", "InstanceId", "InstanceType", "Platform", "State",
-			"VPCId","Role","SubnetId","KeyPair","SecurityGroups","Tags"}
+			"VPCId","Role","SubnetId","KeyPair","SecurityGroups","PrivateIP","PublicIP","Tags"}
 		// Total sheet , rowsNum is position for Total sheet written data
 		excel.SetHeaderLine("output.xlsx","Total", headerLine)
 		rowsNum := 1

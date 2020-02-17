@@ -119,7 +119,7 @@ func SetHeaderLine(path, sheetname string, HeaderLine []interface{}) {
 	if err != nil {
 		println(err.Error())
 	}
-	err = f.SetCellStyle(sheetname, "A1", "O1", style)
+	err = f.SetCellStyle(sheetname, "A1", DescribeLastPosition(len(HeaderLine)), style)
 	err = f.Save()
 	if err != nil {
 		fmt.Println(err)
