@@ -38,12 +38,26 @@ func main() {
 	//excel.SetHeaderLine("output.xlsx", "EC2", headerline)
 	//excel.SetListRows("output.xlsx", "EC2", ec2)
     //cmd.EC2()
+    //// 7. Get DB
+    //var headerline = []interface{}{"AccountId", "Region", "Name", "Type", "EndPoint", "Engine", "EngineVersion",
+    //"Port","SubnetGroup","AvailabilityZone","MultiAZ","Status","StorageType","BackupWindow","BackupPeriod","MaintenanceWindow",
+    //"ParameterGroups","SecurityGroups"}
+    //sess := aws.InitSession("cn-north-1")
+    //a := aws.ListDBs(sess)
+    //excel.CreateFile("output.xlsx")
+    //excel.SetHeaderLine("output.xlsx", "RDS", headerline)
+    //excel.SetListRows("output.xlsx", "RDS", a)
+    // 8. Get Volumes
     sess := aws.InitSession("cn-north-1")
-    a := aws.ListAlarms(sess)
-    for _, alarm := range(a) {
-       fmt.Println(alarm)
-       fmt.Println("------")
+    //a := aws.ListSnapshots(sess)
+    //for _,vol := range a {
+    //    fmt.Println(vol)
+    //}
+    a := aws.ListRouteTables(sess)
+    for _, b := range a {
+        fmt.Println(b)
     }
+
 }
 
 

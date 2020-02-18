@@ -38,6 +38,8 @@ func ListElastiCache(sess *session.Session) (CacheList [][]interface{}) {
 			tools.ErrorLogger.Fatalln(err.Error())
 		}
 	}
+	// handle account id
+	accountId := GetAccountId(sess)
 	for _, cachecluster := range output.CacheClusters {
 		var cache []interface{}
 		//handle securitygroups
@@ -49,7 +51,11 @@ func ListElastiCache(sess *session.Session) (CacheList [][]interface{}) {
 				sgs = append(sgs, *sg.SecurityGroupId)
 			}
 		}
-		cache = append(cache, *cachecluster.CacheClusterId, *cachecluster.NumCacheNodes, *cachecluster.CacheNodeType,
+		if len(output.CacheClusters) >= 100 {
+			// todo cluster > 100
+			tools.WarningLogger.Println("Number Of Clusters > 100 , Data May Missing.")
+		}
+		cache = append(cache, accountId,*sess.Config.Region,*cachecluster.CacheClusterId, *cachecluster.NumCacheNodes, *cachecluster.CacheNodeType,
 			*cachecluster.Engine, *cachecluster.EngineVersion, *cachecluster.CacheSubnetGroupName, *cachecluster.PreferredMaintenanceWindow,
 			*cachecluster.SnapshotRetentionLimit, sgs)
 		CacheList = append(CacheList, cache)

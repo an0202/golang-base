@@ -357,49 +357,66 @@ func EC2DeleteTags(sess *session.Session, instance EC2InstanceDetail) {
 	}
 }
 
-//List Snapshot
-func ListSnapshots(sess *session.Session, accountid string) {
+//List KeysPairs
+func ListKeyPairs(sess *session.Session) (KeyPairList[][]interface{}) {
 	// Create an EC2 service client.
 	svc := ec2.New(sess)
 	// Get instance tag name
-	output, err := svc.DescribeSnapshots(&ec2.DescribeSnapshotsInput{
-		OwnerIds: []*string{aws.String(accountid)},
-	})
-	if err != nil {
-		tools.WarningLogger.Println(err)
-		return
-	}
-	for _, snapshot := range output.Snapshots {
-		fmt.Println(*snapshot.SnapshotId, *snapshot.Description)
-	}
-	//tools.InfoLogger.Println(&output)
-}
-
-//List AMI
-func ListAMIs(sess *session.Session) {
-	// Create an EC2 service client.
-	svc := ec2.New(sess)
-	// Get instance tag name
-	output, err := svc.DescribeImages(&ec2.DescribeImagesInput{
-		Owners: []*string{aws.String("self")},
-	})
-	if err != nil {
-		tools.WarningLogger.Println(err)
-		return
-	}
-	for _, image := range output.Images {
-		fmt.Println(*image.ImageId, *image.Name)
-	}
-	//tools.InfoLogger.Println(&output)
-}
-
-//List Volumes
-func ListVolumes(sess *session.Session) {
-	// Create an EC2 service client.
-	svc := ec2.New(sess)
-	// Get instance tag name
-	output, err := svc.DescribeVolumes(&ec2.DescribeVolumesInput{
+	output, err := svc.DescribeKeyPairs(&ec2.DescribeKeyPairsInput{
 		DryRun: aws.Bool(false),
+	})
+	if err != nil {
+		tools.WarningLogger.Println(err)
+		return
+	}
+	//handel accountId
+	accountId := GetAccountId(sess)
+	for _, keypair := range output.KeyPairs {
+		var keyPair []interface{}
+		keyPair = append(keyPair,accountId,*sess.Config.Region,*keypair.KeyName,*keypair.KeyFingerprint)
+		KeyPairList = append(KeyPairList, keyPair)
+	}
+	return KeyPairList
+}
+
+//ListSnapshots
+func ListSnapshots(sess *session.Session) (SnapshotList [][]interface{}) {
+	var maxResults = 300
+	var token string
+	var snapshots [][]interface{}
+	var nextToken = "default"
+	for nextToken != "" {
+		//fmt.Println("Start Loop With Token:", token)
+		snapshots, nextToken = listSnapshots(sess, token, maxResults)
+		for _, snapshot := range snapshots {
+			SnapshotList = append(SnapshotList, snapshot)
+		}
+		if len(snapshots) == maxResults && nextToken != "" {
+			snapshots, nextToken = listSnapshots(sess, nextToken, maxResults)
+			for _, snapshot := range snapshots {
+				SnapshotList = append(SnapshotList, snapshot)
+			}
+			//fmt.Println("Generated New NextToken:      ",nextToken)
+			token = nextToken
+		} else {
+			nextToken = ""
+		}
+	}
+	return SnapshotList
+}
+
+//List snapshot Internal
+func listSnapshots(sess *session.Session, token string,maxResults int) (SnapshotList [][]interface{},nextToken string) {
+	// Create an EC2 service client.
+	svc := ec2.New(sess)
+	//handle accountId
+	accountId := GetAccountId(sess)
+	// Get snapshots
+	output, err := svc.DescribeSnapshots(&ec2.DescribeSnapshotsInput{
+		DryRun: aws.Bool(false),
+		MaxResults: aws.Int64(int64(maxResults)),
+		NextToken: aws.String(token),
+		OwnerIds: []*string{aws.String(accountId)},
 	})
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
@@ -414,10 +431,105 @@ func ListVolumes(sess *session.Session) {
 		}
 		return
 	}
-	for _, volume := range output.Volumes {
-		fmt.Println(*volume.VolumeId, *volume.State)
+	for _, snapshot := range output.Snapshots {
+		var Snapshot []interface{}
+		Snapshot = append(Snapshot,*snapshot.OwnerId,*sess.Config.Region,*snapshot.SnapshotId,*snapshot.VolumeId,
+			*snapshot.Description,*snapshot.State)
+		SnapshotList = append(SnapshotList, Snapshot)
 	}
-	//tools.InfoLogger.Println(&output)
+	if output.NextToken == nil {
+		nextToken = ""
+	} else {
+		nextToken = *output.NextToken
+	}
+	return SnapshotList, nextToken
+}
+
+//List AMI
+func ListAMIs(sess *session.Session) (AMIList[][]interface{}) {
+	// Create an EC2 service client.
+	svc := ec2.New(sess)
+	// Get instance tag name
+	output, err := svc.DescribeImages(&ec2.DescribeImagesInput{
+		DryRun: aws.Bool(false),
+		Owners: []*string{aws.String("self")},
+	})
+	if err != nil {
+		tools.WarningLogger.Println(err)
+		return
+	}
+	for _, image := range output.Images {
+		var Image []interface{}
+		Image = append(Image,*image.OwnerId,*sess.Config.Region,*image.ImageId,*image.Name,*image.State)
+		AMIList = append(AMIList, Image)
+	}
+	return AMIList
+}
+
+//ListVolumes
+func ListVolumes(sess *session.Session) (VolumeList [][]interface{}) {
+	var maxResults = 100
+	var token string
+	var vols [][]interface{}
+	var nextToken = "default"
+	for nextToken != "" {
+		//fmt.Println("use nextToken:",nextToken)
+		vols, nextToken = listVolumes(sess, token, maxResults)
+		for _, vol := range vols {
+			VolumeList = append(VolumeList, vol)
+		}
+		if len(vols) == maxResults && nextToken != "" {
+			//tools.WarningLogger.Println("Get More Volumes ......")
+			vols, nextToken = listVolumes(sess, nextToken, maxResults)
+			for _, vol := range vols {
+				VolumeList = append(VolumeList, vol)
+			}
+			//fmt.Println("nextTokenGenerate:      ",nextToken)
+			token = nextToken
+		} else {
+			nextToken = ""
+		}
+	}
+	return VolumeList
+}
+
+//List Volumes Internal
+func listVolumes(sess *session.Session, token string,maxResults int) (VolumeList [][]interface{},nextToken string) {
+	// Create an EC2 service client.
+	svc := ec2.New(sess)
+	// Get volumes
+	output, err := svc.DescribeVolumes(&ec2.DescribeVolumesInput{
+		DryRun: aws.Bool(false),
+		MaxResults: aws.Int64(int64(maxResults)),
+		NextToken: aws.String(token),
+	})
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+		return
+	}
+	//handle account id
+	accountId := GetAccountId(sess)
+	for _, volume := range output.Volumes {
+		var Volume []interface{}
+		Volume = append(Volume,accountId,*sess.Config.Region,*volume.VolumeId, *volume.State, *volume.VolumeType,
+			*volume.Size,*volume.AvailabilityZone)
+		VolumeList = append(VolumeList, Volume)
+	}
+	if output.NextToken == nil {
+		nextToken = ""
+	} else {
+		nextToken = *output.NextToken
+	}
+	return VolumeList, nextToken
 }
 
 //List Instances
