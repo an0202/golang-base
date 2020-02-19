@@ -601,7 +601,7 @@ func ListInstances(sess *session.Session) (InstanceList [][]interface{}) {
 			}
 			Instance = append(Instance, *reservation.OwnerId,*sess.Config.Region,instancename, *instance.InstanceId,
 				*instance.InstanceType, platform, *instance.State.Name, *instance.VpcId,
-				rolearn, *instance.SubnetId, keypair, sgs, *instance.PrivateIpAddress, publicip, tags)
+				rolearn, *instance.SubnetId, *instance.PrivateIpAddress, publicip,keypair, sgs, tags)
 			//fmt.Println(Instance)
 			InstanceList = append(InstanceList, Instance)
 		}

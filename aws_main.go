@@ -47,20 +47,13 @@ func main() {
     //excel.CreateFile("output.xlsx")
     //excel.SetHeaderLine("output.xlsx", "RDS", headerline)
     //excel.SetListRows("output.xlsx", "RDS", a)
-    // 8. Get Volumes
+    //cmd.GetAWSResources()
     sess := aws.InitSession("cn-north-1")
-    //a := aws.ListSnapshots(sess)
-    //for _,vol := range a {
-    //    fmt.Println(vol)
-    //}
-    a := aws.ListRouteTables(sess)
-    for _, b := range a {
-        fmt.Println(b)
+    a := aws.ListLBs(sess)
+    for _,lb := range a {
+        fmt.Println(lb)
     }
-
 }
-
-
 
 ////Functional Options
 //

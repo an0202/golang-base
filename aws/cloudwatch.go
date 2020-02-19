@@ -9,34 +9,45 @@ package aws
 
 import (
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/cloudwatch"
-
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/cloudwatch"
 )
-
-//type EC2AlarmDetail struct {
-//	AlarmID          string
-//	Region              string
-//	AWSProfile			string
-//	Dimensions                map[string]string
-//	BlockDeviceMappings []EBSDetail
-//}
-//
-//type EBSDetail struct {
-//	VolumeId string
-//	Status   string
-//}
 
 //List Alarms
 func ListAlarms(sess *session.Session) (AlarmList [][]interface{}) {
+	var maxResults = 100
+	var token string
+	var alarms [][]interface{}
+	var nextToken = "default"
+	for nextToken != "" {
+		//fmt.Println("Start Loop With Token:", token)
+		alarms, nextToken = listAlarms(sess, token, maxResults)
+		for _, snapshot := range alarms {
+			AlarmList = append(AlarmList, snapshot)
+		}
+		if len(alarms) == maxResults && nextToken != "" {
+			alarms, nextToken = listAlarms(sess, nextToken, maxResults)
+			for _, alarm := range alarms {
+				AlarmList = append(AlarmList, alarm)
+			}
+			//fmt.Println("Generated New NextToken:      ",nextToken)
+			token = nextToken
+		} else {
+			nextToken = ""
+		}
+	}
+	return AlarmList
+}
+//List Alarm Internal
+func listAlarms(sess *session.Session, token string,maxResults int) (AlarmList [][]interface{},nextToken string) {
 	// Create an cloudwatch service client.
 	svc := cloudwatch.New(sess)
-	// Set max records
+	// Get alarms
 	output, err := svc.DescribeAlarms(&cloudwatch.DescribeAlarmsInput{
-		//todo next token for list > 100
-		MaxRecords: aws.Int64(100),
+		MaxRecords: aws.Int64(int64(maxResults)),
+		NextToken: aws.String(token),
 	})
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
@@ -49,31 +60,10 @@ func ListAlarms(sess *session.Session) (AlarmList [][]interface{}) {
 			// Message from an error.
 			fmt.Println(err.Error())
 		}
+		return
 	}
 	for _, alarm := range output.MetricAlarms {
 		var Alarm []interface{}
-		//var platform, rolearn, alarmname ,keypair, publicip string
-		//if alarm.Platform != nil {
-		//	platform = *alarm.Platform
-		//} else {
-		//	platform = "linux"
-		//}
-		//if alarm.IamAlarmProfile == nil {
-		//	rolearn = "N/A"
-		//} else {
-		//	rolearn = *alarm.IamAlarmProfile.Arn
-		//}
-		//if alarm.KeyName == nil {
-		//	keypair = "N/A"
-		//} else {
-		//	keypair = *alarm.KeyName
-		//}
-		//if alarm.PublicIpAddress == nil{
-		//	publicip = "N/A"
-		//} else {
-		//	publicip = *alarm.PublicIpAddress
-		//}
-		//handle securitygroups
 		var actions,dimensions []string
 		if len(alarm.AlarmActions) == 0 {
 			actions = append(actions, "N/A ")
@@ -93,13 +83,15 @@ func ListAlarms(sess *session.Session) (AlarmList [][]interface{}) {
 		// handel accountid
 		arnMap := GetARNDetail(*alarm.AlarmArn)
 		accountId := arnMap["accountId"]
-		Alarm = append(Alarm,accountId,*sess.Config.Region,*alarm.AlarmArn, *alarm.AlarmName, *alarm.Namespace,
+		Alarm = append(Alarm,accountId,*sess.Config.Region, *alarm.AlarmName, *alarm.Namespace,
 			*alarm.MetricName, actions, dimensions)
 		//fmt.Println(Alarm)
 		AlarmList = append(AlarmList, Alarm)
 	}
-	//for _, i := range AlarmList {
-	//	fmt.Println(i)
-	//}
-	return AlarmList
+	if output.NextToken == nil {
+		nextToken = ""
+	} else {
+		nextToken = *output.NextToken
+	}
+	return AlarmList, nextToken
 }

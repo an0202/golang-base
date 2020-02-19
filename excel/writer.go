@@ -98,8 +98,8 @@ func SetListRowsV2(path, sheetname, startColumn string, startRow int, rows [][]i
 	}
 }
 
-// SetHeaderLine From A List
-func SetHeaderLine(path, sheetname string, HeaderLine []interface{}) {
+// SetHeadLine From A List
+func SetHeadLine(path, sheetname string, HeadLine []interface{}) {
 	f, err := excelize.OpenFile(path)
 	if err != nil {
 		fmt.Println(err)
@@ -107,7 +107,7 @@ func SetHeaderLine(path, sheetname string, HeaderLine []interface{}) {
 	if f.GetSheetIndex(sheetname) == 0 {
 		f.NewSheet(sheetname)
 	}
-	err = f.SetSheetRow(sheetname, "A1", &HeaderLine)
+	err = f.SetSheetRow(sheetname, "A1", &HeadLine)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -119,7 +119,7 @@ func SetHeaderLine(path, sheetname string, HeaderLine []interface{}) {
 	if err != nil {
 		println(err.Error())
 	}
-	err = f.SetCellStyle(sheetname, "A1", DescribeLastPosition(len(HeaderLine)), style)
+	err = f.SetCellStyle(sheetname, "A1", DescribeLastPosition(len(HeadLine)), style)
 	err = f.Save()
 	if err != nil {
 		fmt.Println(err)

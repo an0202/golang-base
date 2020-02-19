@@ -3,29 +3,29 @@
 // * @Description:
 // * @File:  cmd-getResources.go
 // * @Version: 1.0.0
-// * @Date: 2020/02/18 13:42
+// * @Date: 2020/02/19 22:42
 // */
 package cmd
 
 import (
 	"flag"
 	"golang-base/aws"
+	"golang-base/excel"
 	"golang-base/tools"
 	"os"
 )
 
 func initResources() {
-	//	excelFile = flag.String("file", "tags.xlsx", "Source ExcelFile To Be Processed")
-	//	sheetName = flag.String("sheet", "EC2", "Sheet In ExcelFile To Be Processed")
-	srcFile = flag.String("f", "", "Read Instance ids From File Line By Line")
+	configFile = flag.String("f", "config.xlsx", "Read Config From Excel Line By Line")
+	sheetName = flag.String("sheet", "default_config", "Sheet With Config To Be Process")
 	region = flag.String("region", "cn-north-1", "AWS Region")
 	suffix = flag.String("m", "date", "Add date/final/.. Suffix To AMI Name")
 	instanceid = flag.String("i", "i-abc123", "AWS EC2 InstanceID")
 	help = flag.Bool("h", false, "Print This Message")
 }
 
-func getAWSResources() {
-	initami()
+func GetAWSResources() {
+	initResources()
 	// Parse flag
 	flag.Parse()
 	if *help == true {
@@ -35,15 +35,25 @@ func getAWSResources() {
 	if flag.NFlag() == 0 {
 		flag.Usage()
 	}
-	// Read instance id from file
-	if *srcFile != "" {
-		instanceids := tools.GetRecords(*srcFile)
-		sess := aws.InitSession(*region)
-		for _, instanceid := range instanceids {
-			aws.CreateImage(sess, instanceid, *suffix)
+	// Read Config From File
+	if *configFile != "" {
+		configs := excel.ReadToMaps(*configFile, *sheetName)
+		var outputFile = "output.xlsx"
+		excel.CreateFile(outputFile)
+		for _, config := range configs {
+			c := aws.ExcelConfigMarshal(config)
+			if c.AWSProfile == "" {
+				tools.WarningLogger.Println("Missing AWS_PROFILE")
+			} else {
+				c.Do(outputFile)
+			}
 		}
+		//instanceids := tools.GetRecords(*srcFile)
+		//sess := aws.InitSession(*region)
+		//for _, instanceid := range instanceids {
+		//	aws.CreateImage(sess, instanceid, *suffix)
+		//}
 	} else {
-		sess := aws.InitSession(*region)
-		aws.CreateImage(sess, *instanceid, *suffix)
+		tools.ErrorLogger.Fatalln("Not Currently Supported, Please Use Excel Config File")
 	}
 }

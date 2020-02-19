@@ -17,8 +17,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 )
 
-//List ElastiCache
-func ListElastiCache(sess *session.Session) (CacheList [][]interface{}) {
+//List ElastiCaches
+func ListECCs(sess *session.Session) (CacheList [][]interface{}) {
 	// Create an elasticache service client.
 	svc := elasticache.New(sess)
 	// Get elasticache cluster

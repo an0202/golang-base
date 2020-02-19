@@ -33,7 +33,7 @@ func exitErrorf(msg string, args ...interface{}) {
 	os.Exit(1)
 }
 
-func GetSGPolicys(sess *session.Session) (PolicyList []interface{}) {
+func ListSGs(sess *session.Session) (PolicyList []interface{}) {
 	// Create an EC2 service client.
 	svc := ec2.New(sess)
 

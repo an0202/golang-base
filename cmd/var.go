@@ -28,3 +28,10 @@ var (
 	instanceid *string
 	srcFile    *string
 )
+
+//initResources
+var (
+	configFile *string
+)
+
+
