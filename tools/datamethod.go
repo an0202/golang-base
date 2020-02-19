@@ -25,12 +25,22 @@ func StringFind(slice []string, val string) bool {
 //	uniqueSlice := unique(intSlice)
 //	fmt.Println(uniqueSlice)
 //}
-
-//todo sort and remove duplicate
 func unique(intSlice []int) []int {
 	keys := make(map[int]bool)
 	list := []int{}
 	for _, entry := range intSlice {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
+}
+
+func UniqueStringList(StringSlice []string) []string {
+	keys := make(map[string]bool)
+	var list []string
+	for _, entry := range StringSlice {
 		if _, value := keys[entry]; !value {
 			keys[entry] = true
 			list = append(list, entry)

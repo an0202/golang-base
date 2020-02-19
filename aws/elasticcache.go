@@ -14,13 +14,12 @@ import (
 	"github.com/aws/aws-sdk-go/service/elasticache"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/session"
 )
 
 //List ElastiCaches
-func ListECCs(sess *session.Session) (CacheList [][]interface{}) {
+func ListECCs(se Session) (CacheList [][]interface{}) {
 	// Create an elasticache service client.
-	svc := elasticache.New(sess)
+	svc := elasticache.New(se.Sess)
 	// Get elasticache cluster
 	output, err := svc.DescribeCacheClusters(&elasticache.DescribeCacheClustersInput{
 		// Todo: Unhandle error for numbers of cluster > 100
@@ -30,16 +29,15 @@ func ListECCs(sess *session.Session) (CacheList [][]interface{}) {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			default:
-				tools.ErrorLogger.Fatalln(aerr.Error())
+				tools.ErrorLogger.Println(aerr.Error())
 			}
 		} else {
 			// Print the error, cast err to awserr.Error to get the Code and
 			// Message from an error.
-			tools.ErrorLogger.Fatalln(err.Error())
+			tools.ErrorLogger.Println(err.Error())
 		}
+		return
 	}
-	// handle account id
-	accountId := GetAccountId(sess)
 	for _, cachecluster := range output.CacheClusters {
 		var cache []interface{}
 		//handle securitygroups
@@ -55,7 +53,7 @@ func ListECCs(sess *session.Session) (CacheList [][]interface{}) {
 			// todo cluster > 100
 			tools.WarningLogger.Println("Number Of Clusters > 100 , Data May Missing.")
 		}
-		cache = append(cache, accountId,*sess.Config.Region,*cachecluster.CacheClusterId, *cachecluster.NumCacheNodes, *cachecluster.CacheNodeType,
+		cache = append(cache, se.AccountId, se.UsedRegion,*cachecluster.CacheClusterId, *cachecluster.NumCacheNodes, *cachecluster.CacheNodeType,
 			*cachecluster.Engine, *cachecluster.EngineVersion, *cachecluster.CacheSubnetGroupName, *cachecluster.PreferredMaintenanceWindow,
 			*cachecluster.SnapshotRetentionLimit, sgs)
 		CacheList = append(CacheList, cache)

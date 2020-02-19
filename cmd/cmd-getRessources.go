@@ -18,9 +18,8 @@ import (
 func initResources() {
 	configFile = flag.String("f", "config.xlsx", "Read Config From Excel Line By Line")
 	sheetName = flag.String("sheet", "default_config", "Sheet With Config To Be Process")
-	region = flag.String("region", "cn-north-1", "AWS Region")
-	suffix = flag.String("m", "date", "Add date/final/.. Suffix To AMI Name")
-	instanceid = flag.String("i", "i-abc123", "AWS EC2 InstanceID")
+	//region = flag.String("region", "cn-north-1", "AWS Region")
+	summary = flag.Bool("s", false, "Summarize The Operation Results To Sheet \"Total\", Operate Must Be Same!")
 	help = flag.Bool("h", false, "Print This Message")
 }
 
@@ -36,15 +35,55 @@ func GetAWSResources() {
 		flag.Usage()
 	}
 	// Read Config From File
-	if *configFile != "" {
-		configs := excel.ReadToMaps(*configFile, *sheetName)
-		var outputFile = "output.xlsx"
-		excel.CreateFile(outputFile)
-		for _, config := range configs {
-			c := aws.ExcelConfigMarshal(config)
-			c.Do(outputFile)
+	if *summary == false {
+		if *configFile != "" {
+			configs := excel.ReadToMaps(*configFile, *sheetName)
+			var outputFile = "output.xlsx"
+			excel.CreateFile(outputFile)
+			for _, config := range configs {
+				c := aws.ExcelConfigMarshal(config)
+				c.Do(outputFile)
+			}
+		} else {
+			tools.ErrorLogger.Fatalln("Not Currently Supported, Please Use Excel Config File")
 		}
 	} else {
-		tools.ErrorLogger.Fatalln("Not Currently Supported, Please Use Excel Config File")
+		if *configFile != "" {
+			configs := excel.ReadToMaps(*configFile, *sheetName)
+			var operateList []string
+			// check each config, if there is a different operate
+			for _, config := range configs {
+				c := aws.ExcelConfigMarshal(config)
+				operateList = append(operateList, c.Operate)
+			}
+			op := tools.UniqueStringList(operateList)
+			if len(op) != 1 {
+				tools.ErrorLogger.Fatalln("OperateList Must Be Same , Current OperateList Is",op)
+			} else {
+				rowsNum := 1
+				var totalHeadLine []interface{}
+				var outputFile = "output.xlsx"
+				//excel.CreateFile(outputFile)
+				for _, config := range configs {
+					c := aws.ExcelConfigMarshal(config)
+					results := c.ReturnResources()
+					// use last result as totalHeadline
+					totalHeadLine = c.HeadLine
+					if len(results) != 0 {
+						tools.InfoLogger.Printf("Found %d Result In %s : %s \n", len(results),c.AccountId,c.Region)
+						excel.SetHeadLine(outputFile, c.OutputSheet, c.HeadLine)
+						excel.SetListRows(outputFile, c.OutputSheet, results)
+						// Write summary data to Total sheet
+						excel.SetListRowsV2(outputFile,"Total","A",rowsNum+1,results)
+						rowsNum += len(results)
+					} else {
+						tools.InfoLogger.Printf("No Result In %s : %s \n", c.AccountId,c.Region)
+					}
+				}
+				excel.SetHeadLine(outputFile,"Total", totalHeadLine)
+			}
+		} else {
+			tools.ErrorLogger.Fatalln("Not Currently Supported, Please Use Excel Config File")
+		}
 	}
 }

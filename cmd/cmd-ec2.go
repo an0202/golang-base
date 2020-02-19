@@ -58,9 +58,9 @@ func EC2() {
 				//fmt.Println("RowsNumis:      ",rowsNum)
 				b := aws.EC2InstanceMarshal(v)
 				// create a new session
-				se.Sess = se.InitSessionWithAWSProfile(b.Region,b.AWSProfile)
+				se.InitSessionWithAWSProfile(b.Region,b.AWSProfile)
 				// fmt.Println(se.Sess.Config.Credentials)
-				instances := aws.ListInstances(se.Sess)
+				instances := aws.ListInstances(*se)
 				var outputSheetName = b.AWSProfile+"-"+b.Region
 				if len(instances) != 0 {
 					tools.InfoLogger.Printf("Found %d Instances In %s : %s \n", len(instances), b.AWSProfile,b.Region)
@@ -74,16 +74,18 @@ func EC2() {
 				}
 			}
 		} else {
-			// Does not read data from excel (used for export single account ec2 list)
-			defaultSess := aws.InitSession(*region)
-			instances := aws.ListInstances(defaultSess)
-			if len(instances) != 0 {
-				tools.InfoLogger.Printf("Found %d Instances In %s \n", len(instances),*region)
-				excel.SetHeadLine("output.xlsx","Total", headerLine)
-				excel.SetListRows("output.xlsx","Total", instances)
-			} else {
-				tools.InfoLogger.Printf("No EC2 Instnace In %s \n", *region)
-			}
+			//// Does not read data from excel (used for export single account ec2 list)
+			//defaultSess := aws.InitSession(*region)
+			//instances := aws.ListInstances(defaultSess)
+			//if len(instances) != 0 {
+			//	tools.InfoLogger.Printf("Found %d Instances In %s \n", len(instances),*region)
+			//	excel.SetHeadLine("output.xlsx","Total", headerLine)
+			//	excel.SetListRows("output.xlsx","Total", instances)
+			//} else {
+			//	tools.InfoLogger.Printf("No EC2 Instnace In %s \n", *region)
+			//}
+			//todo fix issue,maybe this file need be delete
+			return
 		}
 
 	default:

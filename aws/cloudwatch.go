@@ -11,24 +11,23 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 )
 
 //List Alarms
-func ListAlarms(sess *session.Session) (AlarmList [][]interface{}) {
+func ListAlarms(se Session) (AlarmList [][]interface{}) {
 	var maxResults = 100
 	var token string
 	var alarms [][]interface{}
 	var nextToken = "default"
 	for nextToken != "" {
 		//fmt.Println("Start Loop With Token:", token)
-		alarms, nextToken = listAlarms(sess, token, maxResults)
+		alarms, nextToken = listAlarms(se, token, maxResults)
 		for _, snapshot := range alarms {
 			AlarmList = append(AlarmList, snapshot)
 		}
 		if len(alarms) == maxResults && nextToken != "" {
-			alarms, nextToken = listAlarms(sess, nextToken, maxResults)
+			alarms, nextToken = listAlarms(se, nextToken, maxResults)
 			for _, alarm := range alarms {
 				AlarmList = append(AlarmList, alarm)
 			}
@@ -41,9 +40,9 @@ func ListAlarms(sess *session.Session) (AlarmList [][]interface{}) {
 	return AlarmList
 }
 //List Alarm Internal
-func listAlarms(sess *session.Session, token string,maxResults int) (AlarmList [][]interface{},nextToken string) {
+func listAlarms(se Session, token string,maxResults int) (AlarmList [][]interface{},nextToken string) {
 	// Create an cloudwatch service client.
-	svc := cloudwatch.New(sess)
+	svc := cloudwatch.New(se.Sess)
 	// Get alarms
 	output, err := svc.DescribeAlarms(&cloudwatch.DescribeAlarmsInput{
 		MaxRecords: aws.Int64(int64(maxResults)),
@@ -83,7 +82,7 @@ func listAlarms(sess *session.Session, token string,maxResults int) (AlarmList [
 		// handel accountid
 		arnMap := GetARNDetail(*alarm.AlarmArn)
 		accountId := arnMap["accountId"]
-		Alarm = append(Alarm,accountId,*sess.Config.Region, *alarm.AlarmName, *alarm.Namespace,
+		Alarm = append(Alarm,accountId,se.UsedRegion, *alarm.AlarmName, *alarm.Namespace,
 			*alarm.MetricName, actions, dimensions)
 		//fmt.Println(Alarm)
 		AlarmList = append(AlarmList, Alarm)

@@ -14,7 +14,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
 
@@ -33,9 +32,9 @@ func exitErrorf(msg string, args ...interface{}) {
 	os.Exit(1)
 }
 
-func ListSGs(sess *session.Session) (PolicyList []interface{}) {
+func ListSGs(se Session) (PolicyList []interface{}) {
 	// Create an EC2 service client.
-	svc := ec2.New(sess)
+	svc := ec2.New(se.Sess)
 
 	// Retrieve the security sg descriptions
 	result, err := svc.DescribeSecurityGroups(&ec2.DescribeSecurityGroupsInput{
@@ -143,9 +142,9 @@ func ListSGs(sess *session.Session) (PolicyList []interface{}) {
 }
 
 //List EIPs
-func ListEIPs(sess *session.Session) (EIPList[][]interface{}) {
+func ListEIPs(se Session) (EIPList[][]interface{}) {
 	// Create an EC2 service client.
-	svc := ec2.New(sess)
+	svc := ec2.New(se.Sess)
 	// get eips
 	output, err := svc.DescribeAddresses(&ec2.DescribeAddressesInput{
 		DryRun: aws.Bool(false),
@@ -154,8 +153,6 @@ func ListEIPs(sess *session.Session) (EIPList[][]interface{}) {
 		tools.WarningLogger.Println(err)
 		return
 	}
-	//handel accountId
-	accountId := GetAccountId(sess)
 	//
 	for _, eip := range output.Addresses {
 		var EIP []interface{}
@@ -169,16 +166,16 @@ func ListEIPs(sess *session.Session) (EIPList[][]interface{}) {
 		if len(name) == 0 {
 			name = "N/A "
 		}
-		EIP = append(EIP,accountId,*sess.Config.Region,name,*eip.PublicIp)
+		EIP = append(EIP,se.AccountId,se.UsedRegion,name,*eip.PublicIp)
 		EIPList = append(EIPList, EIP)
 	}
 	return EIPList
 }
 
 //List SubNets
-func ListSubNets(sess *session.Session) (SubNetList[][]interface{}) {
+func ListSubNets(se Session) (SubNetList[][]interface{}) {
 	// Create an EC2 service client.
-	svc := ec2.New(sess)
+	svc := ec2.New(se.Sess)
 	// get eips
 	output, err := svc.DescribeSubnets(&ec2.DescribeSubnetsInput{
 		MaxResults: aws.Int64(100),
@@ -204,7 +201,7 @@ func ListSubNets(sess *session.Session) (SubNetList[][]interface{}) {
 		if len(output.Subnets) == 100 {
 			tools.WarningLogger.Println("Subnet Number > 100 , Data May Loss")
 		}
-		SubNet = append(SubNet,*subnet.OwnerId,*sess.Config.Region,name,*subnet.SubnetId,*subnet.VpcId,*subnet.CidrBlock,
+		SubNet = append(SubNet,*subnet.OwnerId,se.UsedRegion,name,*subnet.SubnetId,*subnet.VpcId,*subnet.CidrBlock,
 			*subnet.AvailabilityZone, *subnet.DefaultForAz)
 		SubNetList = append(SubNetList, SubNet)
 	}
@@ -212,9 +209,9 @@ func ListSubNets(sess *session.Session) (SubNetList[][]interface{}) {
 }
 
 //List RouteTables
-func ListRouteTables(sess *session.Session) (RouteTableList[][]interface{}) {
+func ListRouteTables(se Session) (RouteTableList[][]interface{}) {
 	// Create an EC2 service client.
-	svc := ec2.New(sess)
+	svc := ec2.New(se.Sess)
 	// get routetables
 	output, err := svc.DescribeRouteTables(&ec2.DescribeRouteTablesInput{
 		MaxResults: aws.Int64(100),
@@ -255,7 +252,7 @@ func ListRouteTables(sess *session.Session) (RouteTableList[][]interface{}) {
 		if len(output.RouteTables) == 100 {
 			tools.WarningLogger.Println("Subnet Number > 100 , Data May Loss")
 		}
-		RouteTable = append(RouteTable,*routeTable.OwnerId,*sess.Config.Region,name,*routeTable.RouteTableId,*routeTable.VpcId,
+		RouteTable = append(RouteTable,*routeTable.OwnerId,se.UsedRegion,name,*routeTable.RouteTableId,*routeTable.VpcId,
 		assosications,routes)
 		RouteTableList = append(RouteTableList, RouteTable)
 	}

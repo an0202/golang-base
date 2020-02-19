@@ -14,13 +14,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/session"
 )
 
 //List DBs
-func ListDBs(sess *session.Session) (DBList [][]interface{}) {
+func ListDBs(se Session) (DBList [][]interface{}) {
 	// Create an rds service client.
-	svc := rds.New(sess)
+	svc := rds.New(se.Sess)
 	// Get rds cluster
 	output, err := svc.DescribeDBInstances(&rds.DescribeDBInstancesInput{
 		// Todo: Unhandle error for numbers of cluster > 100
@@ -30,13 +29,14 @@ func ListDBs(sess *session.Session) (DBList [][]interface{}) {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			default:
-				tools.ErrorLogger.Fatalln(aerr.Error())
+				tools.ErrorLogger.Println(aerr.Error())
 			}
 		} else {
 			// Print the error, cast err to awserr.Error to get the Code and
 			// Message from an error.
-			tools.ErrorLogger.Fatalln(err.Error())
+			tools.ErrorLogger.Println(err.Error())
 		}
+		return
 	}
 	for _, dbInstance := range output.DBInstances {
 		var db []interface{}
@@ -63,7 +63,7 @@ func ListDBs(sess *session.Session) (DBList [][]interface{}) {
 		}
 		// handle account id
 		accountId := GetARNDetail(*dbInstance.DBInstanceArn)["accountId"]
-		db = append(db, accountId, *sess.Config.Region,*dbInstance.DBInstanceIdentifier,*dbInstance.DBInstanceClass,
+		db = append(db, accountId, se.UsedRegion,*dbInstance.DBInstanceIdentifier,*dbInstance.DBInstanceClass,
 			*dbInstance.Endpoint.Address,*dbInstance.Engine, *dbInstance.EngineVersion,*dbInstance.Endpoint.Port,
 			*dbInstance.DBSubnetGroup,*dbInstance.AvailabilityZone,*dbInstance.MultiAZ,
 			*dbInstance.DBInstanceStatus, *dbInstance.StorageType, *dbInstance.PreferredBackupWindow,

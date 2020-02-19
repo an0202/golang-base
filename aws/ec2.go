@@ -358,9 +358,9 @@ func EC2DeleteTags(sess *session.Session, instance EC2InstanceDetail) {
 }
 
 //List KeysPairs
-func ListKeyPairs(sess *session.Session) (KeyPairList[][]interface{}) {
+func ListKeyPairs(se Session) (KeyPairList[][]interface{}) {
 	// Create an EC2 service client.
-	svc := ec2.New(sess)
+	svc := ec2.New(se.Sess)
 	// Get instance tag name
 	output, err := svc.DescribeKeyPairs(&ec2.DescribeKeyPairsInput{
 		DryRun: aws.Bool(false),
@@ -369,30 +369,28 @@ func ListKeyPairs(sess *session.Session) (KeyPairList[][]interface{}) {
 		tools.WarningLogger.Println(err)
 		return
 	}
-	//handel accountId
-	accountId := GetAccountId(sess)
 	for _, keypair := range output.KeyPairs {
 		var keyPair []interface{}
-		keyPair = append(keyPair,accountId,*sess.Config.Region,*keypair.KeyName,*keypair.KeyFingerprint)
+		keyPair = append(keyPair,se.AccountId,se.UsedRegion,*keypair.KeyName,*keypair.KeyFingerprint)
 		KeyPairList = append(KeyPairList, keyPair)
 	}
 	return KeyPairList
 }
 
 //ListSnapshots
-func ListSnapshots(sess *session.Session) (SnapshotList [][]interface{}) {
+func ListSnapshots(se Session) (SnapshotList [][]interface{}) {
 	var maxResults = 300
 	var token string
 	var snapshots [][]interface{}
 	var nextToken = "default"
 	for nextToken != "" {
 		//fmt.Println("Start Loop With Token:", token)
-		snapshots, nextToken = listSnapshots(sess, token, maxResults)
+		snapshots, nextToken = listSnapshots(se, token, maxResults)
 		for _, snapshot := range snapshots {
 			SnapshotList = append(SnapshotList, snapshot)
 		}
 		if len(snapshots) == maxResults && nextToken != "" {
-			snapshots, nextToken = listSnapshots(sess, nextToken, maxResults)
+			snapshots, nextToken = listSnapshots(se, nextToken, maxResults)
 			for _, snapshot := range snapshots {
 				SnapshotList = append(SnapshotList, snapshot)
 			}
@@ -406,17 +404,15 @@ func ListSnapshots(sess *session.Session) (SnapshotList [][]interface{}) {
 }
 
 //List snapshot Internal
-func listSnapshots(sess *session.Session, token string,maxResults int) (SnapshotList [][]interface{},nextToken string) {
+func listSnapshots(se Session, token string,maxResults int) (SnapshotList [][]interface{},nextToken string) {
 	// Create an EC2 service client.
-	svc := ec2.New(sess)
-	//handle accountId
-	accountId := GetAccountId(sess)
+	svc := ec2.New(se.Sess)
 	// Get snapshots
 	output, err := svc.DescribeSnapshots(&ec2.DescribeSnapshotsInput{
 		DryRun: aws.Bool(false),
 		MaxResults: aws.Int64(int64(maxResults)),
 		NextToken: aws.String(token),
-		OwnerIds: []*string{aws.String(accountId)},
+		OwnerIds: []*string{aws.String(se.AccountId)},
 	})
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
@@ -433,7 +429,7 @@ func listSnapshots(sess *session.Session, token string,maxResults int) (Snapshot
 	}
 	for _, snapshot := range output.Snapshots {
 		var Snapshot []interface{}
-		Snapshot = append(Snapshot,*snapshot.OwnerId,*sess.Config.Region,*snapshot.SnapshotId,*snapshot.VolumeId,
+		Snapshot = append(Snapshot,*snapshot.OwnerId,se.UsedRegion,*snapshot.SnapshotId,*snapshot.VolumeId,
 			*snapshot.Description,*snapshot.State)
 		SnapshotList = append(SnapshotList, Snapshot)
 	}
@@ -446,9 +442,9 @@ func listSnapshots(sess *session.Session, token string,maxResults int) (Snapshot
 }
 
 //List AMI
-func ListAMIs(sess *session.Session) (AMIList[][]interface{}) {
+func ListAMIs(se Session) (AMIList[][]interface{}) {
 	// Create an EC2 service client.
-	svc := ec2.New(sess)
+	svc := ec2.New(se.Sess)
 	// Get instance tag name
 	output, err := svc.DescribeImages(&ec2.DescribeImagesInput{
 		DryRun: aws.Bool(false),
@@ -460,27 +456,27 @@ func ListAMIs(sess *session.Session) (AMIList[][]interface{}) {
 	}
 	for _, image := range output.Images {
 		var Image []interface{}
-		Image = append(Image,*image.OwnerId,*sess.Config.Region,*image.ImageId,*image.Name,*image.State)
+		Image = append(Image,*image.OwnerId,se.UsedRegion,*image.ImageId,*image.Name,*image.State)
 		AMIList = append(AMIList, Image)
 	}
 	return AMIList
 }
 
 //ListVolumes
-func ListVolumes(sess *session.Session) (VolumeList [][]interface{}) {
+func ListVolumes(se Session) (VolumeList [][]interface{}) {
 	var maxResults = 100
 	var token string
 	var vols [][]interface{}
 	var nextToken = "default"
 	for nextToken != "" {
 		//fmt.Println("use nextToken:",nextToken)
-		vols, nextToken = listVolumes(sess, token, maxResults)
+		vols, nextToken = listVolumes(se, token, maxResults)
 		for _, vol := range vols {
 			VolumeList = append(VolumeList, vol)
 		}
 		if len(vols) == maxResults && nextToken != "" {
 			//tools.WarningLogger.Println("Get More Volumes ......")
-			vols, nextToken = listVolumes(sess, nextToken, maxResults)
+			vols, nextToken = listVolumes(se, nextToken, maxResults)
 			for _, vol := range vols {
 				VolumeList = append(VolumeList, vol)
 			}
@@ -494,9 +490,9 @@ func ListVolumes(sess *session.Session) (VolumeList [][]interface{}) {
 }
 
 //List Volumes Internal
-func listVolumes(sess *session.Session, token string,maxResults int) (VolumeList [][]interface{},nextToken string) {
+func listVolumes(se Session, token string,maxResults int) (VolumeList [][]interface{},nextToken string) {
 	// Create an EC2 service client.
-	svc := ec2.New(sess)
+	svc := ec2.New(se.Sess)
 	// Get volumes
 	output, err := svc.DescribeVolumes(&ec2.DescribeVolumesInput{
 		DryRun: aws.Bool(false),
@@ -516,8 +512,6 @@ func listVolumes(sess *session.Session, token string,maxResults int) (VolumeList
 		}
 		return
 	}
-	//handle account id
-	accountId := GetAccountId(sess)
 	for _, volume := range output.Volumes {
 		var Volume []interface{}
 		var name , attachedInstance string
@@ -544,7 +538,7 @@ func listVolumes(sess *session.Session, token string,maxResults int) (VolumeList
 				attachedInstance = *attach.InstanceId
 			}
 		}
-		Volume = append(Volume,accountId,*sess.Config.Region,name ,*volume.VolumeId,attachedInstance,*volume.State, *volume.VolumeType,
+		Volume = append(Volume,se.AccountId,se.UsedRegion,name ,*volume.VolumeId,attachedInstance,*volume.State, *volume.VolumeType,
 			*volume.Size,*volume.AvailabilityZone)
 		VolumeList = append(VolumeList, Volume)
 	}
@@ -557,9 +551,9 @@ func listVolumes(sess *session.Session, token string,maxResults int) (VolumeList
 }
 
 //List Instances
-func ListInstances(sess *session.Session) (InstanceList [][]interface{}) {
+func ListInstances(se Session) (InstanceList [][]interface{}) {
 	// Create an EC2 service client.
-	svc := ec2.New(sess)
+	svc := ec2.New(se.Sess)
 	// Get instance tag name
 	output, err := svc.DescribeInstances(&ec2.DescribeInstancesInput{
 		DryRun: aws.Bool(false),
@@ -623,7 +617,7 @@ func ListInstances(sess *session.Session) (InstanceList [][]interface{}) {
 					instancename = "N/A "
 				}
 			}
-			Instance = append(Instance, *reservation.OwnerId,*sess.Config.Region,instancename, *instance.InstanceId,
+			Instance = append(Instance, se.AccountId,se.UsedRegion,instancename, *instance.InstanceId,
 				*instance.InstanceType, platform, *instance.State.Name, *instance.VpcId,
 				rolearn, *instance.SubnetId, *instance.PrivateIpAddress, publicip,keypair, sgs, tags)
 			//fmt.Println(Instance)

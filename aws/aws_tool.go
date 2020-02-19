@@ -53,10 +53,18 @@ type ExcelConfig struct {
 	Operate   			string
 	Comment             string
 	outputFile          string
-	outputSheet		    string
+	OutputSheet		    string
+	HeadLine            []interface{}
+	sess                Session
+	AccountId           string
 }
 
 func (c *ExcelConfig) init() {
+	se := c.sess.InitSessionWithAWSProfile(c.Region,c.AWSProfile)
+	c.Region = se.UsedRegion
+	c.AWSProfile = se.UsedAwsProfile
+	c.AccountId = se.AccountId
+	c.OutputSheet = c.Operate[4:]+"-"+se.AccountId+"-"+c.Region
 	tools.InfoLogger.Printf("%s From Account: %s (%s) .\n",c.Operate,c.AWSProfile,c.Region)
 }
 
@@ -66,76 +74,123 @@ func (c *ExcelConfig) Do(outputFile string) {
 	}
 	c.init()
 	c.outputFile = outputFile
-	sess := InitSession(c.Region)
 	switch c.Operate {
 	case "ListInstances":
-		c.outputSheet = "EC2"
-		excel.SetHeadLine(c.outputFile, c.outputSheet,EC2HeadLine)
-		result := ListInstances(sess)
-		excel.SetListRows(c.outputFile, c.outputSheet,result)
+		//c.OutputSheet = "EC2"
+		excel.SetHeadLine(c.outputFile, c.OutputSheet,EC2HeadLine)
+		result := ListInstances(c.sess)
+		excel.SetListRows(c.outputFile, c.OutputSheet,result)
 	case "ListDBs":
-		c.outputSheet = "RDS"
-		excel.SetHeadLine(c.outputFile, c.outputSheet,DBHeadLine)
-		result := ListDBs(sess)
-		excel.SetListRows(c.outputFile, c.outputSheet,result)
+		//c.OutputSheet = "RDS"
+		excel.SetHeadLine(c.outputFile, c.OutputSheet,DBHeadLine)
+		result := ListDBs(c.sess)
+		excel.SetListRows(c.outputFile, c.OutputSheet,result)
 	case "ListECCs":
-		c.outputSheet = "ECC"
-		excel.SetHeadLine(c.outputFile, c.outputSheet,ECCHeadLine)
-		result := ListECCs(sess)
-		excel.SetListRows(c.outputFile, c.outputSheet,result)
+		//c.OutputSheet = "ECC"
+		excel.SetHeadLine(c.outputFile, c.OutputSheet,ECCHeadLine)
+		result := ListECCs(c.sess)
+		excel.SetListRows(c.outputFile, c.OutputSheet,result)
 	case "ListVolumes":
-		c.outputSheet = "EC2-Volume"
-		excel.SetHeadLine(c.outputFile, c.outputSheet,VolumeHeadLine)
-		result := ListVolumes(sess)
-		excel.SetListRows(c.outputFile, c.outputSheet,result)
+		//c.OutputSheet = "EC2-Volume"
+		excel.SetHeadLine(c.outputFile, c.OutputSheet,VolumeHeadLine)
+		result := ListVolumes(c.sess)
+		excel.SetListRows(c.outputFile, c.OutputSheet,result)
 	case "ListSnapshots":
-		c.outputSheet = "EC2-Snapshot"
-		excel.SetHeadLine(c.outputFile, c.outputSheet,SnapshotHeadLine)
-		result := ListSnapshots(sess)
-		excel.SetListRows(c.outputFile, c.outputSheet,result)
+		//c.OutputSheet = "EC2-Snapshot"
+		excel.SetHeadLine(c.outputFile, c.OutputSheet,SnapshotHeadLine)
+		result := ListSnapshots(c.sess)
+		excel.SetListRows(c.outputFile, c.OutputSheet,result)
 	case "ListAMIs":
-		c.outputSheet = "EC2-AMI"
-		excel.SetHeadLine(c.outputFile, c.outputSheet,AMIHeadLine)
-		result := ListAMIs(sess)
-		excel.SetListRows(c.outputFile, c.outputSheet,result)
+		//c.OutputSheet = "EC2-AMI"
+		excel.SetHeadLine(c.outputFile, c.OutputSheet,AMIHeadLine)
+		result := ListAMIs(c.sess)
+		excel.SetListRows(c.outputFile, c.OutputSheet,result)
 	case "ListEIPs":
-		c.outputSheet = "EC2-EIP"
-		excel.SetHeadLine(c.outputFile, c.outputSheet,EIPHeadLine)
-		result := ListEIPs(sess)
-		excel.SetListRows(c.outputFile, c.outputSheet,result)
+		//c.OutputSheet = "EC2-EIP"
+		excel.SetHeadLine(c.outputFile, c.OutputSheet,EIPHeadLine)
+		result := ListEIPs(c.sess)
+		excel.SetListRows(c.outputFile, c.OutputSheet,result)
 	case "ListKeyPairs":
-		c.outputSheet = "EC2-KeyPairs"
-		excel.SetHeadLine(c.outputFile, c.outputSheet,KeyPairHeadLine)
-		result := ListKeyPairs(sess)
-		excel.SetListRows(c.outputFile, c.outputSheet,result)
+		//c.OutputSheet = "EC2-KeyPairs"
+		excel.SetHeadLine(c.outputFile, c.OutputSheet,KeyPairHeadLine)
+		result := ListKeyPairs(c.sess)
+		excel.SetListRows(c.outputFile, c.OutputSheet,result)
 	case "ListSubNets":
-		c.outputSheet = "VPC-SubNet"
-		excel.SetHeadLine(c.outputFile, c.outputSheet,SubnetHeadLine)
-		result := ListSubNets(sess)
-		excel.SetListRows(c.outputFile, c.outputSheet,result)
+		//c.OutputSheet = "VPC-SubNet"
+		excel.SetHeadLine(c.outputFile, c.OutputSheet,SubnetHeadLine)
+		result := ListSubNets(c.sess)
+		excel.SetListRows(c.outputFile, c.OutputSheet,result)
 	case "ListRouteTables":
-		c.outputSheet = "VPC-RouteTable"
-		excel.SetHeadLine(c.outputFile, c.outputSheet,RouteTableHeadLine)
-		result := ListRouteTables(sess)
-		excel.SetListRows(c.outputFile, c.outputSheet,result)
+		//c.OutputSheet = "VPC-RouteTable"
+		excel.SetHeadLine(c.outputFile, c.OutputSheet,RouteTableHeadLine)
+		result := ListRouteTables(c.sess)
+		excel.SetListRows(c.outputFile, c.OutputSheet,result)
 	case "ListSGs":
-		c.outputSheet = "VPC-SG"
-		excel.SetHeadLine(c.outputFile, c.outputSheet,SGHeadLine)
-		result := ListSGs(sess)
-		excel.SetStructRows(c.outputFile, c.outputSheet,result)
+		//c.OutputSheet = "VPC-SG"
+		excel.SetHeadLine(c.outputFile, c.OutputSheet,SGHeadLine)
+		result := ListSGs(c.sess)
+		excel.SetStructRows(c.outputFile, c.OutputSheet,result)
 	case "ListAlarms":
-		c.outputSheet = "CloudWatch-Alarm"
-		excel.SetHeadLine(c.outputFile, c.outputSheet,AlarmHeadLine)
-		result := ListAlarms(sess)
-		excel.SetListRows(c.outputFile, c.outputSheet,result)
+		//c.OutputSheet = "CloudWatch-Alarm"
+		excel.SetHeadLine(c.outputFile, c.OutputSheet,AlarmHeadLine)
+		result := ListAlarms(c.sess)
+		excel.SetListRows(c.outputFile, c.OutputSheet,result)
 	case "ListLBs":
-		c.outputSheet = "ELB"
-		excel.SetHeadLine(c.outputFile, c.outputSheet,LBHeadLine)
-		result := ListLBs(sess)
-		excel.SetListRows(c.outputFile, c.outputSheet,result)
+		//c.OutputSheet = "ELB"
+		excel.SetHeadLine(c.outputFile, c.OutputSheet,LBHeadLine)
+		result := ListLBs(c.sess)
+		excel.SetListRows(c.outputFile, c.OutputSheet,result)
 	default:
 		tools.WarningLogger.Println("Unsupported Operate:", c.Operate)
 	}
+}
+
+func (c *ExcelConfig) ReturnResources () (result [][]interface{}){
+	if len(c.Operate) == 0 {
+		return
+	}
+	c.init()
+	switch c.Operate {
+	case "ListInstances":
+		c.HeadLine = EC2HeadLine
+		result = ListInstances(c.sess)
+	case "ListDBs":
+		c.HeadLine = DBHeadLine
+		result = ListDBs(c.sess)
+	case "ListECCs":
+		c.HeadLine = ECCHeadLine
+		result = ListECCs(c.sess)
+	case "ListVolumes":
+		c.HeadLine = VolumeHeadLine
+		result = ListVolumes(c.sess)
+	case "ListSnapshots":
+		c.HeadLine = SnapshotHeadLine
+		result = ListSnapshots(c.sess)
+	case "ListAMIs":
+		c.HeadLine = AMIHeadLine
+		result = ListAMIs(c.sess)
+	case "ListEIPs":
+		c.HeadLine = EIPHeadLine
+		result = ListEIPs(c.sess)
+	case "ListKeyPairs":
+		c.HeadLine = KeyPairHeadLine
+		result = ListKeyPairs(c.sess)
+	case "ListSubNets":
+		c.HeadLine = SubnetHeadLine
+		result = ListSubNets(c.sess)
+	case "ListRouteTables":
+		c.HeadLine = RouteTableHeadLine
+		result = ListRouteTables(c.sess)
+	case "ListAlarms":
+		c.HeadLine = AlarmHeadLine
+		result = ListAlarms(c.sess)
+	case "ListLBs":
+		c.HeadLine = LBHeadLine
+		result = ListLBs(c.sess)
+	default:
+		tools.WarningLogger.Println("Unsupported Operate:", c.Operate)
+	}
+	return  result
 }
 
 //GetARNDetail return a map contains ARN base information

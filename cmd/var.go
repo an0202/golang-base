@@ -32,6 +32,7 @@ var (
 //initResources
 var (
 	configFile *string
+	summary    *bool
 )
 
 

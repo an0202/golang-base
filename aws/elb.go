@@ -12,13 +12,12 @@ import (
 	"golang-base/tools"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/session"
 )
 
 //List ElastiLBV1
-func ListLBs(sess *session.Session) (LBList [][]interface{}) {
+func ListLBs(se Session) (LBList [][]interface{}) {
 	// Create an elb service client.
-	svc := elb.New(sess)
+	svc := elb.New(se.Sess)
 	// Get lb
 	output, err := svc.DescribeLoadBalancers(&elb.DescribeLoadBalancersInput{
 		//MaxRecords: aws.Int64(100),
@@ -35,8 +34,6 @@ func ListLBs(sess *session.Session) (LBList [][]interface{}) {
 			tools.ErrorLogger.Fatalln(err.Error())
 		}
 	}
-	// handle account id
-	accountId := GetAccountId(sess)
 	for _, lb := range output.LoadBalancerDescriptions {
 		var loadBalancer []interface{}
 		//handle securityGroups listners instances availabilityZones
@@ -73,7 +70,7 @@ func ListLBs(sess *session.Session) (LBList [][]interface{}) {
 		//
 		//	tools.WarningLogger.Println("Number Of Clusters > 100 , Data May Missing.")
 		//}
-		loadBalancer = append(loadBalancer, accountId,*sess.Config.Region,*lb.VPCId,*lb.LoadBalancerName, *lb.DNSName,
+		loadBalancer = append(loadBalancer, se.AccountId,se.UsedRegion,*lb.VPCId,*lb.LoadBalancerName, *lb.DNSName,
 			*lb.Scheme,azs,sgs,listners,*lb.HealthCheck,instances)
 		LBList = append(LBList, loadBalancer)
 	}

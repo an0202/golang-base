@@ -60,7 +60,7 @@ func EC2Tags() {
 					aws.EC2CreateTags(se.Sess, b, *overide)
 				} else {
 					// create a new session
-					se.Sess = se.InitSessionWithAWSProfile(b.Region,b.AWSProfile)
+					se.InitSessionWithAWSProfile(b.Region,b.AWSProfile)
 					fmt.Println(se.Sess.Config.Credentials)
 					aws.EC2CreateTags(se.Sess, b, *overide)
 				}
@@ -94,7 +94,7 @@ func EC2Tags() {
 					results = append(results, result)
 				} else {
 					// create a new session
-					se.Sess = se.InitSessionWithAWSProfile(b.Region,b.AWSProfile)
+					se.InitSessionWithAWSProfile(b.Region,b.AWSProfile)
 					// fmt.Println(se.Sess.Config.Credentials)
 					_, result := aws.EC2GetTags(se.Sess, b, *tags)
 					results = append(results, result)

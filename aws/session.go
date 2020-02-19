@@ -14,13 +14,19 @@ import (
 type Session struct {
 	UsedRegion        string
 	UsedAwsProfile 	  string
+	AccountId		  string
 	Sess *session.Session
 }
 
-func (se *Session) InitSessionWithAWSProfile(region, awsProfile string) *session.Session {
+func (se *Session) InitSessionWithAWSProfile(region, awsProfile string) *Session {
 	//Set AWS_SDK_LOAD_CONFIG="true"
 	os.Setenv("AWS_SDK_LOAD_CONFIG", "1")
-	os.Setenv("AWS_PROFILE", awsProfile)
+	if awsProfile == "" {
+		tools.WarningLogger.Println("Config's AWS_PROFILE Is null , Create Credential From OS Environment.")
+	} else {
+		tools.InfoLogger.Printf("Create Credential By : %s, Region: %s\n",awsProfile,region)
+		os.Setenv("AWS_PROFILE", awsProfile)
+	}
 	// Init a session
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(region)},
@@ -28,11 +34,11 @@ func (se *Session) InitSessionWithAWSProfile(region, awsProfile string) *session
 	if err != nil {
 		tools.ErrorLogger.Fatalln(err)
 	}
-	tools.InfoLogger.Printf("Create A New Session By AWS_PROFILE: %s, Region: %s",awsProfile,region)
+	se.AccountId = GetAccountId(sess)
 	se.UsedAwsProfile = awsProfile
 	se.UsedRegion = region
 	se.Sess = sess
-	return sess
+	return se
 }
 
 // compatible with old code
@@ -66,6 +72,7 @@ func GetAccountId(sess *session.Session) string {
 			// Message from an error.
 			tools.ErrorLogger.Println(err.Error())
 		}
+		return "ERROR"
 	}
 	tools.InfoLogger.Println("Get Caller Identity:", result)
 	return *result.Account
