@@ -520,7 +520,31 @@ func listVolumes(sess *session.Session, token string,maxResults int) (VolumeList
 	accountId := GetAccountId(sess)
 	for _, volume := range output.Volumes {
 		var Volume []interface{}
-		Volume = append(Volume,accountId,*sess.Config.Region,*volume.VolumeId, *volume.State, *volume.VolumeType,
+		var name , attachedInstance string
+		var tags []string
+		//handle tags
+		if len(volume.Tags) == 0 {
+			tags = append(tags, "N/A ")
+		} else {
+			for _, tag := range volume.Tags {
+				if *tag.Key == "Name" {
+					name = *tag.Value
+				}
+				tags = append(tags, *tag.Key+":"+*tag.Value+" ")
+			}
+			if len(name) == 0 {
+				name = "N/A "
+			}
+		}
+		//handle attached instance
+		if len(volume.Attachments) == 0 {
+			attachedInstance = "N/A"
+		} else {
+			for _ ,attach := range volume.Attachments {
+				attachedInstance = *attach.InstanceId
+			}
+		}
+		Volume = append(Volume,accountId,*sess.Config.Region,name ,*volume.VolumeId,attachedInstance,*volume.State, *volume.VolumeType,
 			*volume.Size,*volume.AvailabilityZone)
 		VolumeList = append(VolumeList, Volume)
 	}

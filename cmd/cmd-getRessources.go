@@ -42,17 +42,8 @@ func GetAWSResources() {
 		excel.CreateFile(outputFile)
 		for _, config := range configs {
 			c := aws.ExcelConfigMarshal(config)
-			if c.AWSProfile == "" {
-				tools.WarningLogger.Println("Missing AWS_PROFILE")
-			} else {
-				c.Do(outputFile)
-			}
+			c.Do(outputFile)
 		}
-		//instanceids := tools.GetRecords(*srcFile)
-		//sess := aws.InitSession(*region)
-		//for _, instanceid := range instanceids {
-		//	aws.CreateImage(sess, instanceid, *suffix)
-		//}
 	} else {
 		tools.ErrorLogger.Fatalln("Not Currently Supported, Please Use Excel Config File")
 	}

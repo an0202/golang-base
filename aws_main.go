@@ -1,9 +1,6 @@
 package main
 
-import (
-    "fmt"
-    "golang-base/aws"
-)
+import "golang-base/cmd"
 
 func main() {
 	////1. get policy
@@ -43,16 +40,14 @@ func main() {
     //"Port","SubnetGroup","AvailabilityZone","MultiAZ","Status","StorageType","BackupWindow","BackupPeriod","MaintenanceWindow",
     //"ParameterGroups","SecurityGroups"}
     //sess := aws.InitSession("cn-north-1")
-    //a := aws.ListDBs(sess)
+    //b := aws.ListVolumes(sess)
+    //for i,k := range b {
+    //    fmt.Println(i,k)
+    //}
     //excel.CreateFile("output.xlsx")
-    //excel.SetHeaderLine("output.xlsx", "RDS", headerline)
+    //excel.SetHeadLine("output.xlsx", "RDS", headerline)
     //excel.SetListRows("output.xlsx", "RDS", a)
-    //cmd.GetAWSResources()
-    sess := aws.InitSession("cn-north-1")
-    a := aws.ListLBs(sess)
-    for _,lb := range a {
-        fmt.Println(lb)
-    }
+    cmd.GetAWSResources()
 }
 
 ////Functional Options

@@ -28,7 +28,8 @@ var KeyPairHeadLine = []interface{}{"AccountId", "Region", "KeyName", "Fingerpri
 
 var SnapshotHeadLine = []interface{}{"AccountId", "Region", "SnapshotId", "VolumeId", "Description", "State"}
 
-var VolumeHeadLine = []interface{}{"AccountId", "Region", "VolumeId", "State", "Type", "Size", "AvailabilityZone"}
+var VolumeHeadLine = []interface{}{"AccountId", "Region", "Name","VolumeId","AttachedInstance","State", "Type", "Size",
+	"AvailabilityZone"}
 
 var AMIHeadLine = []interface{}{"AccountId", "Region", "ImageId", "Name", "State"}
 
@@ -43,8 +44,8 @@ var SGHeadLine = []interface{}{"GroupName", "VpcId", "GroupId", "Protocol", "Sou
 
 var AlarmHeadLine = []interface{}{"AccountId", "Region", "AlarmName", "NameSpace", "MetricName", "Actions", "Dimensions"}
 
-var LBHeadLine = []interface{}{"AccountId", "Region", "VPCId", "LoadBalancerName", "Scheme", "AvailabilityZone", "SecurityGroups",
-	"Listner","HealthCheck","Instances"}
+var LBHeadLine = []interface{}{"AccountId", "Region", "VPCId", "LoadBalancerName", "DNSName","Scheme", "AvailabilityZone",
+	"SecurityGroups", "Listner","HealthCheck","Instances"}
 
 type ExcelConfig struct {
 	AWSProfile          string
@@ -56,12 +57,14 @@ type ExcelConfig struct {
 }
 
 func (c *ExcelConfig) init() {
-	// todo : config check
-	return
+	tools.InfoLogger.Printf("%s From Account: %s (%s) .\n",c.Operate,c.AWSProfile,c.Region)
 }
 
 func (c *ExcelConfig) Do(outputFile string) {
-	//c.init()
+	if len(c.Operate) == 0 {
+		return
+	}
+	c.init()
 	c.outputFile = outputFile
 	sess := InitSession(c.Region)
 	switch c.Operate {
