@@ -72,7 +72,9 @@ func GetAWSResources() {
 					c := aws.ExcelConfigMarshal(config)
 					results := c.ReturnResources()
 					// use last result as totalHeadline
-					totalHeadLine = c.HeadLine
+					if c.HeadLine != nil {
+						totalHeadLine = c.HeadLine
+					}
 					if len(results) != 0 {
 						tools.InfoLogger.Printf("Found %d Result In %s (%s) \n", len(results),c.AccountId,c.Region)
 						excel.SetHeadLine(outputFile, c.OutputSheet, c.HeadLine)

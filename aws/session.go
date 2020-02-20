@@ -72,7 +72,7 @@ func GetAccountId(sess *session.Session) string {
 			// Message from an error.
 			tools.ErrorLogger.Println(err.Error())
 		}
-		return "ERROR"
+		return "ErrorId"
 	}
 	tools.InfoLogger.Println("Get Caller Identity:", *result.Arn)
 	return *result.Account

@@ -53,8 +53,11 @@ var SGHeadLine = []interface{}{"GroupName", "VpcId", "GroupId", "Protocol", "Sou
 
 var AlarmHeadLine = []interface{}{"AccountId", "Region", "AlarmName", "NameSpace", "MetricName", "Actions", "Dimensions"}
 
-var LBHeadLine = []interface{}{"AccountId", "Region", "VPCId", "LoadBalancerName", "DNSName","Scheme", "AvailabilityZone",
+var CLBHeadLine = []interface{}{"AccountId", "Region", "VPCId", "LoadBalancerName", "DNSName","Scheme", "AvailabilityZone",
 	"SecurityGroups", "Listner","HealthCheck","Instances"}
+
+var LBv2HeadLine = []interface{}{"AccountId", "Region", "VPCId", "LoadBalancerName", "DNSName","ARN","Type","Scheme",
+	"AvailabilityZone", "SecurityGroups", "Listener","TargetGroups","Backends"}
 
 type ExcelConfig struct {
 	AWSProfile          string
@@ -84,6 +87,7 @@ func (c *ExcelConfig) init() {
 
 func (c *ExcelConfig) Do(outputFile string) {
 	if len(c.Operate) == 0 {
+		tools.WarningLogger.Println("Missing Operation Instructions , Skip This Operate :", *c)
 		return
 	}
 	c.init()
@@ -153,11 +157,16 @@ func (c *ExcelConfig) Do(outputFile string) {
 		excel.SetHeadLine(c.outputFile, c.OutputSheet,AlarmHeadLine)
 		result := ListAlarms(c.sess)
 		excel.SetListRows(c.outputFile, c.OutputSheet,result)
-	case "ListLBs":
+	case "ListCLBs":
 		//c.OutputSheet = "ELB"
-		excel.SetHeadLine(c.outputFile, c.OutputSheet,LBHeadLine)
-		result := ListLBs(c.sess)
+		excel.SetHeadLine(c.outputFile, c.OutputSheet,CLBHeadLine)
+		result := ListCLBs(c.sess)
 		excel.SetListRows(c.outputFile, c.OutputSheet,result)
+	case "Liv2LBv2s":
+		//c.OutputSheet = "ELB"
+		excel.SetHeadLine(c.outputFile, c.OutputSheet,LBv2HeadLine)
+		result := Listv2LBv2s(c.sess)
+		excel.SetStructRows(c.outputFile, c.OutputSheet,result)
 	default:
 		tools.WarningLogger.Println("Unsupported Operate:", c.Operate)
 	}
@@ -165,6 +174,7 @@ func (c *ExcelConfig) Do(outputFile string) {
 
 func (c *ExcelConfig) ReturnResources () (result [][]interface{}){
 	if len(c.Operate) == 0 {
+		tools.WarningLogger.Println("Missing Operation Instructions , Skip This Operate :", *c)
 		return
 	}
 	c.init()
@@ -205,9 +215,9 @@ func (c *ExcelConfig) ReturnResources () (result [][]interface{}){
 	case "ListAlarms":
 		c.HeadLine = AlarmHeadLine
 		result = ListAlarms(c.sess)
-	case "ListLBs":
-		c.HeadLine = LBHeadLine
-		result = ListLBs(c.sess)
+	case "ListCLBs":
+		c.HeadLine = CLBHeadLine
+		result = ListCLBs(c.sess)
 	default:
 		tools.WarningLogger.Println("Unsupported Operate:", c.Operate)
 	}

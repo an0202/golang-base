@@ -41,7 +41,7 @@ func SetStructRows(path, sheetname string, rows []interface{}) {
 		rowList = nil
 		v := reflect.ValueOf(row)
 		for i := 0; i < v.NumField(); i++ {
-			// fmt.Println(i, v.Field(i))
+			//fmt.Println(i, v.Field(i))
 			rowList = append(rowList, v.Field(i).Interface())
 		}
 		// fmt.Println(rowList)
