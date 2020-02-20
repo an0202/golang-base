@@ -259,3 +259,38 @@ func ListRouteTables(se Session) (RouteTableList[][]interface{}) {
 	return RouteTableList
 }
 
+//List VpcPeering
+func ListVPCPeering(se Session) (PeeringConnectionList[][]interface{}) {
+	// Create an EC2 service client.
+	svc := ec2.New(se.Sess)
+	// get VpcPeering
+	output, err := svc.DescribeVpcPeeringConnections(&ec2.DescribeVpcPeeringConnectionsInput{
+		MaxResults: aws.Int64(100),
+		DryRun: aws.Bool(false),
+	})
+	if err != nil {
+		tools.WarningLogger.Println(err)
+		return
+	}
+	for _, vpcPerring := range output.VpcPeeringConnections{
+		var PeeringConnection []interface{}
+		var name string
+		//get name tag
+		for _, tag := range vpcPerring.Tags {
+			if *tag.Key == "Name" {
+				name = *tag.Value
+			}
+		}
+		if len(name) == 0 {
+			name = "N/A "
+		}
+		if len(output.VpcPeeringConnections) == 100 {
+			tools.WarningLogger.Println("VpcPeeringConnections Number > 100 , Data May Loss")
+		}
+		PeeringConnection = append(PeeringConnection,se.AccountId,se.UsedRegion, name,*vpcPerring.VpcPeeringConnectionId,
+			*vpcPerring.RequesterVpcInfo, *vpcPerring.AccepterVpcInfo)
+		PeeringConnectionList = append(PeeringConnectionList, PeeringConnection)
+	}
+	return PeeringConnectionList
+}
+

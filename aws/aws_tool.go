@@ -13,6 +13,13 @@ import (
 	"regexp"
 )
 
+//Region Abbreviation
+var RegionAbb = map[string]string{
+	"cn-north-1": "CNN1",
+	"cn-northwest-1": "CNW1",
+}
+
+
 // Excel HeadLine For AWS Resource
 var EC2HeadLine = []interface{}{"AccountId", "Region", "Name", "InstanceId", "InstanceType", "Platform", "State",
 	"VPCId","Role","SubnetId","PrivateIp","PublicIp","KeyPair","SecurityGroups","Tags"}
@@ -40,6 +47,8 @@ var SubnetHeadLine = []interface{}{"AccountId", "Region", "Name", "SubnetId", "V
 
 var RouteTableHeadLine = []interface{}{"AccountId", "Region", "Name", "RouteTableId", "VPCId", "Assosications", "Routes"}
 
+var PeeringConnectionHeadLine = []interface{}{"AccountId", "Region", "Name", "PeeringId", "RequesterInfo", "AccepterInfo"}
+
 var SGHeadLine = []interface{}{"GroupName", "VpcId", "GroupId", "Protocol", "Source", "FromPort", "ToPort"}
 
 var AlarmHeadLine = []interface{}{"AccountId", "Region", "AlarmName", "NameSpace", "MetricName", "Actions", "Dimensions"}
@@ -62,10 +71,15 @@ type ExcelConfig struct {
 func (c *ExcelConfig) init() {
 	se := c.sess.InitSessionWithAWSProfile(c.Region,c.AWSProfile)
 	c.Region = se.UsedRegion
+	if regionAbb, ok := RegionAbb[se.UsedRegion]; ok{
+		c.Region = regionAbb
+	}else{
+		c.Region = se.UsedRegion
+	}
 	c.AWSProfile = se.UsedAwsProfile
 	c.AccountId = se.AccountId
 	c.OutputSheet = c.Operate[4:]+"-"+se.AccountId+"-"+c.Region
-	tools.InfoLogger.Printf("%s From Account: %s (%s) .\n",c.Operate,c.AWSProfile,c.Region)
+	tools.InfoLogger.Printf("%s From Account: %s (%s) \n",c.Operate,c.AccountId,c.Region)
 }
 
 func (c *ExcelConfig) Do(outputFile string) {
@@ -125,6 +139,10 @@ func (c *ExcelConfig) Do(outputFile string) {
 		excel.SetHeadLine(c.outputFile, c.OutputSheet,RouteTableHeadLine)
 		result := ListRouteTables(c.sess)
 		excel.SetListRows(c.outputFile, c.OutputSheet,result)
+	case "ListVPCPeering":
+		excel.SetHeadLine(c.outputFile, c.OutputSheet,PeeringConnectionHeadLine)
+		result := ListRouteTables(c.sess)
+		excel.SetListRows(c.outputFile, c.OutputSheet,result)
 	case "ListSGs":
 		//c.OutputSheet = "VPC-SG"
 		excel.SetHeadLine(c.outputFile, c.OutputSheet,SGHeadLine)
@@ -180,6 +198,9 @@ func (c *ExcelConfig) ReturnResources () (result [][]interface{}){
 		result = ListSubNets(c.sess)
 	case "ListRouteTables":
 		c.HeadLine = RouteTableHeadLine
+		result = ListRouteTables(c.sess)
+	case "ListVPCPeering":
+		c.HeadLine = PeeringConnectionHeadLine
 		result = ListRouteTables(c.sess)
 	case "ListAlarms":
 		c.HeadLine = AlarmHeadLine

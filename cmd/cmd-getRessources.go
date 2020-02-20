@@ -54,7 +54,11 @@ func GetAWSResources() {
 			// check each config, if there is a different operate
 			for _, config := range configs {
 				c := aws.ExcelConfigMarshal(config)
-				operateList = append(operateList, c.Operate)
+				if c.Operate != "" {
+					operateList = append(operateList, c.Operate)
+				} else {
+					continue
+				}
 			}
 			op := tools.UniqueStringList(operateList)
 			if len(op) != 1 {
@@ -63,21 +67,21 @@ func GetAWSResources() {
 				rowsNum := 1
 				var totalHeadLine []interface{}
 				var outputFile = "output.xlsx"
-				//excel.CreateFile(outputFile)
+				excel.CreateFile(outputFile)
 				for _, config := range configs {
 					c := aws.ExcelConfigMarshal(config)
 					results := c.ReturnResources()
 					// use last result as totalHeadline
 					totalHeadLine = c.HeadLine
 					if len(results) != 0 {
-						tools.InfoLogger.Printf("Found %d Result In %s : %s \n", len(results),c.AccountId,c.Region)
+						tools.InfoLogger.Printf("Found %d Result In %s (%s) \n", len(results),c.AccountId,c.Region)
 						excel.SetHeadLine(outputFile, c.OutputSheet, c.HeadLine)
 						excel.SetListRows(outputFile, c.OutputSheet, results)
 						// Write summary data to Total sheet
 						excel.SetListRowsV2(outputFile,"Total","A",rowsNum+1,results)
 						rowsNum += len(results)
 					} else {
-						tools.InfoLogger.Printf("No Result In %s : %s \n", c.AccountId,c.Region)
+						tools.InfoLogger.Printf("No Result In %s (%s) \n", c.AccountId,c.Region)
 					}
 				}
 				excel.SetHeadLine(outputFile,"Total", totalHeadLine)

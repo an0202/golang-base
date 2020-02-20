@@ -59,7 +59,7 @@ func ListDBs(se Session) (DBList [][]interface{}) {
 		}
 		if len(output.DBInstances) >= 100 {
 			// todo cluster > 100
-			tools.WarningLogger.Println("Number Of DB Clusters > 100 , Data May Missing.")
+			tools.WarningLogger.Println("Number Of DB Clusters > 100 , Data May Loss.")
 		}
 		// handle account id
 		accountId := GetARNDetail(*dbInstance.DBInstanceArn)["accountId"]
