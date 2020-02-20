@@ -49,6 +49,8 @@ var RouteTableHeadLine = []interface{}{"AccountId", "Region", "Name", "RouteTabl
 
 var PeeringConnectionHeadLine = []interface{}{"AccountId", "Region", "Name", "PeeringId", "RequesterInfo", "AccepterInfo"}
 
+var NatGatewayHeadLine = []interface{}{"AccountId", "Region", "Name", "NatGatewayId", "VPCId", "SubNetId"}
+
 var SGHeadLine = []interface{}{"GroupName", "VpcId", "GroupId", "Protocol", "Source", "FromPort", "ToPort"}
 
 var AlarmHeadLine = []interface{}{"AccountId", "Region", "AlarmName", "NameSpace", "MetricName", "Actions", "Dimensions"}
@@ -145,12 +147,16 @@ func (c *ExcelConfig) Do(outputFile string) {
 		excel.SetListRows(c.outputFile, c.OutputSheet,result)
 	case "ListVPCPeering":
 		excel.SetHeadLine(c.outputFile, c.OutputSheet,PeeringConnectionHeadLine)
-		result := ListRouteTables(c.sess)
+		result := ListVPCPeering(c.sess)
 		excel.SetListRows(c.outputFile, c.OutputSheet,result)
-	case "ListSGs":
+	case "ListNatGateway":
+		excel.SetHeadLine(c.outputFile, c.OutputSheet,NatGatewayHeadLine)
+		result := ListNatGateway(c.sess)
+		excel.SetListRows(c.outputFile, c.OutputSheet,result)
+	case "Liv2SGs":
 		//c.OutputSheet = "VPC-SG"
 		excel.SetHeadLine(c.outputFile, c.OutputSheet,SGHeadLine)
-		result := ListSGs(c.sess)
+		result := Listv2SGs(c.sess)
 		excel.SetStructRows(c.outputFile, c.OutputSheet,result)
 	case "ListAlarms":
 		//c.OutputSheet = "CloudWatch-Alarm"
@@ -211,7 +217,10 @@ func (c *ExcelConfig) ReturnResources () (result [][]interface{}){
 		result = ListRouteTables(c.sess)
 	case "ListVPCPeering":
 		c.HeadLine = PeeringConnectionHeadLine
-		result = ListRouteTables(c.sess)
+		result = ListVPCPeering(c.sess)
+	case "ListNatGateway":
+		c.HeadLine = NatGatewayHeadLine
+		result = ListNatGateway(c.sess)
 	case "ListAlarms":
 		c.HeadLine = AlarmHeadLine
 		result = ListAlarms(c.sess)

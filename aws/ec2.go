@@ -21,7 +21,7 @@ import (
 )
 
 type EC2InstanceDetail struct {
-	InstanceID          string
+	InstanceId          string
 	Region              string
 	AWSProfile			string
 	Tags                map[string]string
@@ -92,11 +92,11 @@ func CreateImage(sess *session.Session, instanceid, suffix string) {
 // EC2Instance retype from excel
 func EC2InstanceMarshal(ec2instancedetail map[string]string) (instance EC2InstanceDetail) {
 	instance.Tags = make(map[string]string)
-	if _, ok := ec2instancedetail["InstanceID"]; ok {
+	if _, ok := ec2instancedetail["InstanceId"]; ok {
 		for k, v := range ec2instancedetail {
 			switch k {
-			case "InstanceID":
-				instance.InstanceID = ec2instancedetail["InstanceID"]
+			case "InstanceId":
+				instance.InstanceId = ec2instancedetail["InstanceId"]
 			case "Region":
 				instance.Region = ec2instancedetail["Region"]
 			case "AWS_PROFILE":
@@ -106,7 +106,7 @@ func EC2InstanceMarshal(ec2instancedetail map[string]string) (instance EC2Instan
 			}
 		}
 	} else {
-		tools.ErrorLogger.Fatalln("Missing InstanceID:", ec2instancedetail)
+		tools.ErrorLogger.Fatalln("Missing InstanceId:", ec2instancedetail)
 	}
 	return instance
 }
@@ -127,7 +127,7 @@ func EC2GetTags(sess *session.Session, instance EC2InstanceDetail, queryKeys str
 		Filters: []*ec2.Filter{
 			{
 				Name:   aws.String("resource-id"),
-				Values: []*string{aws.String(instance.InstanceID)},
+				Values: []*string{aws.String(instance.InstanceId)},
 			},
 		},
 	})
@@ -140,7 +140,7 @@ func EC2GetTags(sess *session.Session, instance EC2InstanceDetail, queryKeys str
 		for _, v := range curTags.Tags {
 			allTags[*v.Key] = *v.Value
 		}
-		fmt.Println("Cur ec2 tag key list:", allTags)
+		//fmt.Println("Cur ec2 tag key list:", allTags)
 	}
 	// queryResult with instanceid and value of the queried tag key
 	for _ , queryKey := range strings.Split(queryKeys, ",") {
@@ -150,21 +150,21 @@ func EC2GetTags(sess *session.Session, instance EC2InstanceDetail, queryKeys str
 			queryResult = append(queryResult, "N/A")
 		}
 	}
-	fmt.Println("Query Result For Tags: ", queryResult)
+	tools.InfoLogger.Println("Query Result For Tags: ", queryResult)
 	return allTags, queryResult
 }
 
 // CreateTags from excel with skip exist tag key
 func EC2CreateTags(sess *session.Session, instance EC2InstanceDetail, override bool) {
 	// instance reMarshal to aws ec2 type
-	var resourceIDs = []string{instance.InstanceID}
+	var resourceIDs = []string{instance.InstanceId}
 
 	// Create an EC2 service client.
 	svc := ec2.New(sess)
 	// Get EBSid
 	ebsMap, err := svc.DescribeInstanceAttribute(&ec2.DescribeInstanceAttributeInput{
 		DryRun:     aws.Bool(false),
-		InstanceId: aws.String(instance.InstanceID),
+		InstanceId: aws.String(instance.InstanceId),
 		Attribute:  aws.String("blockDeviceMapping"),
 	})
 	if err != nil {
@@ -177,7 +177,7 @@ func EC2CreateTags(sess *session.Session, instance EC2InstanceDetail, override b
 		}
 		resourceIDs = append(resourceIDs, ebs.VolumeId)
 	}
-	tools.InfoLogger.Println("Add Tags To :", resourceIDs)
+	tools.InfoLogger.Println("Starting Process Resource:", resourceIDs)
 	var tags []*ec2.Tag
 	// whether to override tag when tag exists
 	if override {
@@ -195,7 +195,7 @@ func EC2CreateTags(sess *session.Session, instance EC2InstanceDetail, override b
 			Filters: []*ec2.Filter{
 				{
 					Name:   aws.String("resource-id"),
-					Values: []*string{aws.String(instance.InstanceID)},
+					Values: []*string{aws.String(instance.InstanceId)},
 				},
 			},
 		})
@@ -208,14 +208,14 @@ func EC2CreateTags(sess *session.Session, instance EC2InstanceDetail, override b
 			for _, v := range curTags.Tags {
 				curTagsKeyList = append(curTagsKeyList, *v.Key)
 			}
-			fmt.Println("Cur ec2 tag key list:", curTagsKeyList)
+			tools.InfoLogger.Println("Current EC2 Tag Key List Is:", curTagsKeyList)
 		}
 		//
 		for preTagKey, preTagValue := range instance.Tags {
 			exist := tools.StringFind(curTagsKeyList, preTagKey)
 			switch exist {
 			case true:
-				fmt.Println("tag key exist ,abort")
+				tools.InfoLogger.Printf("Find %s In Current EC2 Tag List , Skip \n",preTagKey)
 			case false:
 				curTags.Tags = append(curTags.Tags, &ec2.TagDescription{
 					Key:   aws.String(preTagKey),
@@ -230,7 +230,7 @@ func EC2CreateTags(sess *session.Session, instance EC2InstanceDetail, override b
 			})
 		}
 	}
-	tools.InfoLogger.Println("Create Tags:",tags)
+	tools.InfoLogger.Printf("Create Tags For Resource %s Tag %s : \n",resourceIDs,tags)
 	//Create tag
 	_, err = svc.CreateTags(&ec2.CreateTagsInput{
 		DryRun:    aws.Bool(false),
@@ -319,7 +319,7 @@ func EC2CreateTags(sess *session.Session, instance EC2InstanceDetail, override b
 
 func EC2DeleteTags(sess *session.Session, instance EC2InstanceDetail) {
 	// instance reMarshal to aws ec2 type
-	var resourceIDs = []string{instance.InstanceID}
+	var resourceIDs = []string{instance.InstanceId}
 	var tags []*ec2.Tag
 	for k, v := range instance.Tags {
 		tags = append(tags, &ec2.Tag{
@@ -332,7 +332,7 @@ func EC2DeleteTags(sess *session.Session, instance EC2InstanceDetail) {
 	// Get EBSid
 	ebsmap, err := svc.DescribeInstanceAttribute(&ec2.DescribeInstanceAttributeInput{
 		DryRun:     aws.Bool(false),
-		InstanceId: aws.String(instance.InstanceID),
+		InstanceId: aws.String(instance.InstanceId),
 		Attribute:  aws.String("blockDeviceMapping"),
 	})
 	if err != nil {

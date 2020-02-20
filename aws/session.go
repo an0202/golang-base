@@ -22,7 +22,8 @@ func (se *Session) InitSessionWithAWSProfile(region, awsProfile string) *Session
 	//Set AWS_SDK_LOAD_CONFIG="true"
 	os.Setenv("AWS_SDK_LOAD_CONFIG", "1")
 	if awsProfile == "" {
-		tools.WarningLogger.Println("Config's AWS_PROFILE Is null , Create Credential From OS Environment.")
+		tools.WarningLogger.Println("Config's AWS_PROFILE Is null , Use Previous AWS_PROFILE Or"+
+			" Create Credential From OS Environment.")
 	} else {
 		tools.InfoLogger.Printf("Create Credential By : %s, Region: %s\n",awsProfile,region)
 		os.Setenv("AWS_PROFILE", awsProfile)

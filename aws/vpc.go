@@ -32,7 +32,8 @@ func exitErrorf(msg string, args ...interface{}) {
 	os.Exit(1)
 }
 
-func ListSGs(se Session) (PolicyList []interface{}) {
+//List SecurityGroups With Policy
+func Listv2SGs(se Session) (PolicyList []interface{}) {
 	// Create an EC2 service client.
 	svc := ec2.New(se.Sess)
 
@@ -292,5 +293,39 @@ func ListVPCPeering(se Session) (PeeringConnectionList[][]interface{}) {
 		PeeringConnectionList = append(PeeringConnectionList, PeeringConnection)
 	}
 	return PeeringConnectionList
+}
+
+//List NatGateway
+func ListNatGateway(se Session) (NatGatewayList[][]interface{}) {
+	// Create an EC2 service client.
+	svc := ec2.New(se.Sess)
+	// get nat gateway
+	output, err := svc.DescribeNatGateways(&ec2.DescribeNatGatewaysInput{
+		MaxResults: aws.Int64(100),
+	})
+	if err != nil {
+		tools.WarningLogger.Println(err)
+		return
+	}
+	for _, natGateway := range output.NatGateways{
+		var NatGateway []interface{}
+		var name string
+		//get name tag
+		for _, tag := range natGateway.Tags {
+			if *tag.Key == "Name" {
+				name = *tag.Value
+			}
+		}
+		if len(name) == 0 {
+			name = "N/A "
+		}
+		if len(output.NatGateways) == 100 {
+			tools.WarningLogger.Println("NatGateways Number > 100 , Data May Loss")
+		}
+		NatGateway = append(NatGateway,se.AccountId,se.UsedRegion, name,*natGateway.NatGatewayId,*natGateway.VpcId,
+			*natGateway.SubnetId)
+		NatGatewayList = append(NatGatewayList, NatGateway)
+	}
+	return NatGatewayList
 }
 

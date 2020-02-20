@@ -9,7 +9,6 @@ package cmd
 
 import (
 	"flag"
-	"fmt"
 	"golang-base/aws"
 	"golang-base/excel"
 	"golang-base/tools"
@@ -30,7 +29,7 @@ func initTag() {
 	sheetName = flag.String("sheet", "EC2", "Sheet In ExcelFile To Be Processed")
 	region = flag.String("region", "cn-north-1", "Used For Init A AWS Default Session")
 	method = flag.String("m", "get", "add/del/get Tags")
-	tags = flag.String("tags", "Name,Env,Project", "Require: method = get,Get Specific Tags From Resource And Write To Excel")
+	tags = flag.String("tags", "Name,Env,Project", "Require:[ method = get],Get Specific Tags From Resource And Write To Excel")
 	overide = flag.Bool("o", true, "Overide Exist Tags")
 	help = flag.Bool("h", false, "Print This Message")
 }
@@ -56,12 +55,12 @@ func EC2Tags() {
 			if b.AWSProfile != "" && b.Region != "" {
 				// Use the old session when the current resource and the previous resource belong to the same account and region
 				if b.AWSProfile == se.UsedAwsProfile && b.Region == se.UsedRegion {
-					fmt.Println(se.Sess.Config.Credentials)
+					//fmt.Println(se.Sess.Config.Credentials)
 					aws.EC2CreateTags(se.Sess, b, *overide)
 				} else {
 					// create a new session
 					se.InitSessionWithAWSProfile(b.Region,b.AWSProfile)
-					fmt.Println(se.Sess.Config.Credentials)
+					//fmt.Println(se.Sess.Config.Credentials)
 					aws.EC2CreateTags(se.Sess, b, *overide)
 				}
 				//se.Sess = se.InitSessionWithAWSProfile(b.Region,b.AWSProfile)
