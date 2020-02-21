@@ -114,9 +114,7 @@ func EC2InstanceMarshal(ec2instancedetail map[string]string) (instance EC2Instan
 // GetTags return ec2 tags information
 // allTags : current tags for ec2
 // queryResult : instanceId and the returned value of the queried tag key in list
-func EC2GetTags(sess *session.Session, instance EC2InstanceDetail, queryKeys string) (allTags map[string]string,queryResult []interface{}){
-	// instance reMarshal to aws ec2 type
-
+func EC2GetTags(sess *session.Session, resource EC2InstanceDetail, queryKeys string) (allTags map[string]string,queryResult []interface{}){
 	// Create an EC2 service client.
 	svc := ec2.New(sess)
 
@@ -127,7 +125,7 @@ func EC2GetTags(sess *session.Session, instance EC2InstanceDetail, queryKeys str
 		Filters: []*ec2.Filter{
 			{
 				Name:   aws.String("resource-id"),
-				Values: []*string{aws.String(instance.InstanceId)},
+				Values: []*string{aws.String(resource.InstanceId)},
 			},
 		},
 	})
@@ -143,6 +141,7 @@ func EC2GetTags(sess *session.Session, instance EC2InstanceDetail, queryKeys str
 		//fmt.Println("Cur ec2 tag key list:", allTags)
 	}
 	// queryResult with instanceid and value of the queried tag key
+	queryResult = append(queryResult,resource.InstanceId)
 	for _ , queryKey := range strings.Split(queryKeys, ",") {
 		if _,ok := allTags[queryKey] ; ok {
 			queryResult = append(queryResult, allTags[queryKey])
@@ -150,7 +149,7 @@ func EC2GetTags(sess *session.Session, instance EC2InstanceDetail, queryKeys str
 			queryResult = append(queryResult, "N/A")
 		}
 	}
-	tools.InfoLogger.Println("Query Result For Tags: ", queryResult)
+	tools.InfoLogger.Printf("Query Result For Resource %s : %s \n", resource.InstanceId,queryResult)
 	return allTags, queryResult
 }
 

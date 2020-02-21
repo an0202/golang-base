@@ -104,13 +104,13 @@ func EC2Tags() {
 				results = append(results, result)
 			}
 		}
-		var headerline = []interface{}{"ResourceID"}
+		var headerline = []interface{}{"ResourceId"}
 		for _, v := range strings.Split(*tags,",") {
 			headerline = append(headerline, v)
 		}
 		excel.CreateFile("output-"+*excelFile)
-		excel.SetHeadLine("output-"+*excelFile,*sheetName, headerline)
-		excel.SetListRows("output-"+*excelFile,*sheetName, results)
+		excel.SetHeadLine("output-"+*excelFile,"result", headerline)
+		excel.SetListRows("output-"+*excelFile,"result", results)
 	default:
 		flag.Usage()
 		tools.ErrorLogger.Fatalln("Illegal Method:", *method)
