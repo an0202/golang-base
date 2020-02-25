@@ -105,7 +105,7 @@ func (bk *Bucket) GetBucketVersioning(se Session,BucketName string) string {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			default:
-				tools.ErrorLogger.Println(aerr.Error())
+				tools.ErrorLogger.Println(BucketName,aerr.Error())
 			}
 		} else {
 			// Print the error, cast err to awserr.Error to get the Code and
@@ -131,7 +131,7 @@ func (bk *Bucket) GetBucketWebSite(se Session,BucketName string) interface{} {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			default:
-				tools.WarningLogger.Println(aerr.Error())
+				tools.WarningLogger.Println(BucketName,aerr.Error())
 			}
 		} else {
 			// Print the error, cast err to awserr.Error to get the Code and
@@ -154,7 +154,7 @@ func (bk *Bucket) GetBucketPolicy(se Session,BucketName string) string {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			default:
-				tools.WarningLogger.Println(aerr.Error())
+				tools.WarningLogger.Println(BucketName,aerr.Error())
 			}
 		} else {
 			// Print the error, cast err to awserr.Error to get the Code and
@@ -177,7 +177,7 @@ func (bk *Bucket) GetBucketACLs(se Session,BucketName string) (GrantList []inter
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			default:
-				tools.ErrorLogger.Println(aerr.Error())
+				tools.ErrorLogger.Println(BucketName,aerr.Error())
 			}
 		} else {
 			// Print the error, cast err to awserr.Error to get the Code and
@@ -208,7 +208,7 @@ func (bk *Bucket) GetCORSRules(se Session,BucketName string) (RuleList []interfa
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			default:
-				tools.WarningLogger.Println(aerr.Error())
+				tools.WarningLogger.Println(BucketName,aerr.Error())
 			}
 		} else {
 			// Print the error, cast err to awserr.Error to get the Code and
@@ -239,7 +239,7 @@ func (bk *Bucket) GetLifeCycleRules(se Session,BucketName string) (RuleList []in
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			default:
-				tools.WarningLogger.Println(aerr.Error())
+				tools.WarningLogger.Println(BucketName,aerr.Error())
 			}
 		} else {
 			// Print the error, cast err to awserr.Error to get the Code and
