@@ -1,64 +1,80 @@
+/**
+ * @Author: jie.an
+ * @Description:
+ * @File:  sqs.go
+ * @Version: 1.0.0
+ * @Date: 2020/02/24 19:32
+ */
 package aws
 
 import (
-	"fmt"
-
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/sqs"
+	"golang-base/tools"
 )
 
-func sqsDemo() {
-	// Init a session
-	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String("us-east-2")},
-	)
-	if err != nil {
-		fmt.Println(err)
-	}
+type Queue struct {
+	AccountId string
+	Region    string
+	Name 	  string
+	Policy    string
+	URL       string
+}
 
-	// Create a SQS service client.
-	// svc := sqs.New(sess)
-	// // List the queues available in a given region.
-	// result, err := svc.ListQueues(nil)
-	// if err != nil {
-	// 	fmt.Println("Error", err)
-	// 	return
-	// }
-
-	// fmt.Println("Success")
-	// // As these are pointers, printing them out directly would not be useful.
-	// for i, urls := range result.QueueUrls {
-	// 	// Avoid dereferencing a nil pointer.
-	// 	if urls == nil {
-	// 		continue
-	// 	}
-	// 	fmt.Printf("%d: %s\n", i, *urls)
-	// }
-	// URL to our queue
-	svc := sqs.New(sess)
-	qURL := "https://sqs.us-east-2.amazonaws.com/281525879386/xray-demo-sqs"
-
-	result, err := svc.ReceiveMessage(&sqs.ReceiveMessageInput{
-		AttributeNames: []*string{
-			aws.String(sqs.MessageSystemAttributeNameSentTimestamp),
-		},
-		MessageAttributeNames: []*string{
-			aws.String(sqs.QueueAttributeNameAll),
-		},
-		QueueUrl:            &qURL,
-		MaxNumberOfMessages: aws.Int64(10),
-		VisibilityTimeout:   aws.Int64(60), // 60 seconds
-		WaitTimeSeconds:     aws.Int64(0),
+//List SQS , not test yet , some atts(DelaySeconds,MaximumMessageSize...) need  be  add
+func Listv2SQS(se Session) (SQSList []interface{}) {
+	// Create an sqs service client.
+	svc := sqs.New(se.Sess)
+	// Get sns topics
+	output, err := svc.ListQueues(&sqs.ListQueuesInput{
 	})
 	if err != nil {
-		fmt.Println("Error", err)
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				tools.ErrorLogger.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			tools.ErrorLogger.Println(err.Error())
+		}
 		return
 	}
-	if len(result.Messages) == 0 {
-		fmt.Println("Received no messages")
-		return
+	QE := new(Queue)
+	for _, queue := range output.QueueUrls {
+		QE.AccountId = se.AccountId
+		QE.Region = se.UsedRegion
+		QE.URL = *queue
+		atts := QE.GetQueueAttributes(se, QE.URL)
+		QE.Policy = *atts["Policy"]
+		QE.Name = GetARNDetail(*atts["QueueArn"])["resource"]
+		SQSList = append(SQSList, *QE)
 	}
+	return SQSList
+}
 
-	fmt.Printf("Success: %+v\n", result.Messages)
+func (qe *Queue) GetQueueAttributes(se Session,QueueURL string) map[string]*string {
+	// Create an sqs service client.
+	svc := sqs.New(se.Sess)
+	// Get queue attributes
+	output, err := svc.GetQueueAttributes(&sqs.GetQueueAttributesInput{
+		QueueUrl: aws.String(QueueURL),
+		AttributeNames: []*string{aws.String("ALL")},
+	})
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				tools.ErrorLogger.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			tools.ErrorLogger.Println(err.Error())
+		}
+		return nil
+	}
+	return output.Attributes
 }

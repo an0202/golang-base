@@ -61,6 +61,12 @@ var CLBHeadLine = []interface{}{"AccountId", "Region", "VPCId", "LoadBalancerNam
 var LBv2HeadLine = []interface{}{"AccountId", "Region", "VPCId", "LoadBalancerName", "DNSName","ARN","Type","Scheme",
 	"AvailabilityZone", "SecurityGroups", "Listener","TargetGroups","Backends"}
 
+var SNSHeadLine = []interface{}{"AccountId", "Region", "TopicName","Policy","ARN","Subscriptions"}
+
+//var SQSHeadLine = []interface{}{"AccountId", "Region", "TopicName","Policy","ARN","Subscriptions"}
+
+var S3HeadLine = []interface{}{"AccountId", "Region", "BucketName","ACL","Policy","CORS","LifeCycle","Versioning","WebSite"}
+
 type ExcelConfig struct {
 	AWSProfile          string
 	Region              string
@@ -172,6 +178,18 @@ func (c *ExcelConfig) Do(outputFile string) {
 		//c.OutputSheet = "ELB"
 		excel.SetHeadLine(c.outputFile, c.OutputSheet,LBv2HeadLine)
 		result := Listv2LBv2s(c.sess)
+		excel.SetStructRows(c.outputFile, c.OutputSheet,result)
+	case "Liv2SNS":
+		excel.SetHeadLine(c.outputFile, c.OutputSheet,SNSHeadLine)
+		result := Listv2SNS(c.sess)
+		excel.SetStructRows(c.outputFile, c.OutputSheet,result)
+	//case "Liv2SQS":
+	//	excel.SetHeadLine(c.outputFile, c.OutputSheet,SQSHeadLine)
+	//	result := Listv2SQS(c.sess)
+	//	excel.SetStructRows(c.outputFile, c.OutputSheet,result)
+	case "Liv2S3":
+		excel.SetHeadLine(c.outputFile, c.OutputSheet,S3HeadLine)
+		result := Listv2S3(c.sess)
 		excel.SetStructRows(c.outputFile, c.OutputSheet,result)
 	default:
 		tools.WarningLogger.Println("Unsupported Operate:", c.Operate)
