@@ -20,7 +20,6 @@ var rowList []interface{}
 
 func CreateFile(path string) {
 	f := excelize.NewFile()
-
 	err := f.SaveAs(path)
 	if err != nil {
 		fmt.Println(err)
@@ -93,6 +92,7 @@ func SetListRowsV2(path, sheetname, startColumn string, startRow int, rows [][]i
 		}
 	}
 	err = f.Save()
+	fmt.Println(f.GetSheetIndex("Sheet1"))
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -120,6 +120,12 @@ func SetHeadLine(path, sheetname string, HeadLine []interface{}) {
 		println(err.Error())
 	}
 	err = f.SetCellStyle(sheetname, "A1", DescribeLastPosition(len(HeadLine)), style)
+	//always set sheet 2 as active sheet , used to hidden "Sheet1" , "Sheet1" can not be delete for now.
+	f.SetActiveSheet(2)
+	err = f.SetSheetVisible("Sheet1",false)
+	if err != nil {
+		fmt.Println(err)
+	}
 	err = f.Save()
 	if err != nil {
 		fmt.Println(err)

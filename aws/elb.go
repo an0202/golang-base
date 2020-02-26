@@ -180,12 +180,12 @@ func (lb *LoadBalancer) ListBackends(se Session,TargetARN string) (BackendList [
 	//
 	backEnd := make(map[string]string)
 	if len(output.TargetHealthDescriptions) == 0 {
-		backEnd[TargetARN] = "N/A"
+		backEnd[GetARNDetail(TargetARN)["resource"]] = "N/A"
 		BackendList = append(BackendList, backEnd)
 	} else {
 		for _ , targetHealth := range output.TargetHealthDescriptions {
 			backEnd = make(map[string]string)
-			backEnd[TargetARN] = *targetHealth.Target.Id
+			backEnd[GetARNDetail(TargetARN)["resource"]] = *targetHealth.Target.Id
 			BackendList = append(BackendList, backEnd)
 		}
 	}
