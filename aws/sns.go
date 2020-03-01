@@ -43,8 +43,8 @@ func Listv2SNS(se Session) (SNSList []interface{}) {
 		}
 		return
 	}
-	TP := new(Topic)
 	for _, topic := range output.Topics {
+		TP := new(Topic)
 		if len(output.Topics) >= 100 {
 			tools.WarningLogger.Println("Number Of Topics > 100 , Data May Missing.")
 		}

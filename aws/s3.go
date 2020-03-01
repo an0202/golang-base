@@ -52,8 +52,8 @@ func Listv2S3(se Session) (S3List []interface{}) {
 		}
 		return
 	}
-	BK := new(Bucket)
 	for _, bucket := range output.Buckets {
+		BK := new(Bucket)
 		BK.AccountId = se.AccountId
 		BK.Name = *bucket.Name
         BK.Region = BK.GetBucketLocation(se, BK.Name)

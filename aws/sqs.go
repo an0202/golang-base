@@ -42,8 +42,8 @@ func Listv2SQS(se Session) (SQSList []interface{}) {
 		}
 		return
 	}
-	QE := new(Queue)
 	for _, queue := range output.QueueUrls {
+		QE := new(Queue)
 		QE.AccountId = se.AccountId
 		QE.Region = se.UsedRegion
 		QE.URL = *queue

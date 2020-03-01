@@ -55,8 +55,8 @@ func Listv2LBv2s(se Session) (LBv2List []interface{}) {
 		}
 		return
 	}
-	LB := new(LoadBalancer)
 	for _, lb := range output.LoadBalancers {
+		LB := new(LoadBalancer)
 		//handle securityGroups availabilityZones
 		if len(lb.SecurityGroups) == 0 {
 			LB.SecurityGroups = append(LB.SecurityGroups, "N/A")

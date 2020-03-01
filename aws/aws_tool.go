@@ -24,9 +24,13 @@ var RegionAbb = map[string]string{
 var EC2HeadLine = []interface{}{"AccountId", "Region", "Name", "InstanceId", "InstanceType", "Platform", "State",
 	"VPCId","Role","SubnetId","PrivateIp","PublicIp","KeyPair","SecurityGroups","Tags"}
 
-var DBHeadLine = []interface{}{"AccountId", "Region", "Name", "Type", "EndPoint", "Engine", "EngineVersion",
+var DBInstanceHeadLine = []interface{}{"AccountId", "Region", "Name", "Type", "EndPoint", "Engine", "EngineVersion",
 	"Port","SubnetGroup","AvailabilityZone","MultiAZ","Status","StorageType","BackupWindow","BackupPeriod","MaintenanceWindow",
 	"ParameterGroups","SecurityGroups"}
+
+var DBClusterHeadline = []interface{}{"AccountId", "Region", "Identifier", "Endpoint", "ReaderEndPoint", "EngineMode","Engine",
+	"EngineVersion", "Port","MultiAZ","Status","MaintenanceWindow","BackupWindow","BackupPeriod", "ParameterGroups",
+	"AvailabilityZone","SecurityGroups","Members"}
 
 var ECCHeadLine = []interface{}{"AccountId", "Region", "CacheClusterId", "CacheNodesNumber", "CacheNodeType", "Engine",
 	"EngineVersion", "CacheSubnetGroup","MaintenanceWindow","SnapshotRetention","SecurityGroups"}
@@ -101,52 +105,56 @@ func (c *ExcelConfig) Do(outputFile string) {
 	c.init()
 	c.outputFile = outputFile
 	switch c.Operate {
-	case "ListInstances":
+	case "ListEC2":
 		//c.OutputSheet = "EC2"
 		excel.SetHeadLine(c.outputFile, c.OutputSheet,EC2HeadLine)
 		result := ListInstances(c.sess)
 		excel.SetListRows(c.outputFile, c.OutputSheet,result)
-	case "ListDBs":
+	case "ListDBInstance":
 		//c.OutputSheet = "RDS"
-		excel.SetHeadLine(c.outputFile, c.OutputSheet,DBHeadLine)
-		result := ListDBs(c.sess)
+		excel.SetHeadLine(c.outputFile, c.OutputSheet,DBInstanceHeadLine)
+		result := ListDBInstances(c.sess)
 		excel.SetListRows(c.outputFile, c.OutputSheet,result)
-	case "ListECCs":
+	case "Liv2DBCluster":
+		excel.SetHeadLine(c.outputFile, c.OutputSheet,DBClusterHeadline)
+		result := Listv2DBClusters(c.sess)
+		excel.SetStructRows(c.outputFile, c.OutputSheet,result)
+	case "ListECC":
 		//c.OutputSheet = "ECC"
 		excel.SetHeadLine(c.outputFile, c.OutputSheet,ECCHeadLine)
 		result := ListECCs(c.sess)
 		excel.SetListRows(c.outputFile, c.OutputSheet,result)
-	case "ListVolumes":
+	case "ListVolume":
 		//c.OutputSheet = "EC2-Volume"
 		excel.SetHeadLine(c.outputFile, c.OutputSheet,VolumeHeadLine)
 		result := ListVolumes(c.sess)
 		excel.SetListRows(c.outputFile, c.OutputSheet,result)
-	case "ListSnapshots":
+	case "ListSnapshot":
 		//c.OutputSheet = "EC2-Snapshot"
 		excel.SetHeadLine(c.outputFile, c.OutputSheet,SnapshotHeadLine)
 		result := ListSnapshots(c.sess)
 		excel.SetListRows(c.outputFile, c.OutputSheet,result)
-	case "ListAMIs":
+	case "ListAMI":
 		//c.OutputSheet = "EC2-AMI"
 		excel.SetHeadLine(c.outputFile, c.OutputSheet,AMIHeadLine)
 		result := ListAMIs(c.sess)
 		excel.SetListRows(c.outputFile, c.OutputSheet,result)
-	case "ListEIPs":
+	case "ListEIP":
 		//c.OutputSheet = "EC2-EIP"
 		excel.SetHeadLine(c.outputFile, c.OutputSheet,EIPHeadLine)
 		result := ListEIPs(c.sess)
 		excel.SetListRows(c.outputFile, c.OutputSheet,result)
-	case "ListKeyPairs":
+	case "ListKeyPair":
 		//c.OutputSheet = "EC2-KeyPairs"
 		excel.SetHeadLine(c.outputFile, c.OutputSheet,KeyPairHeadLine)
 		result := ListKeyPairs(c.sess)
 		excel.SetListRows(c.outputFile, c.OutputSheet,result)
-	case "ListSubNets":
+	case "ListSubNet":
 		//c.OutputSheet = "VPC-SubNet"
 		excel.SetHeadLine(c.outputFile, c.OutputSheet,SubnetHeadLine)
 		result := ListSubNets(c.sess)
 		excel.SetListRows(c.outputFile, c.OutputSheet,result)
-	case "ListRouteTables":
+	case "ListRouteTable":
 		//c.OutputSheet = "VPC-RouteTable"
 		excel.SetHeadLine(c.outputFile, c.OutputSheet,RouteTableHeadLine)
 		result := ListRouteTables(c.sess)
@@ -159,22 +167,22 @@ func (c *ExcelConfig) Do(outputFile string) {
 		excel.SetHeadLine(c.outputFile, c.OutputSheet,NatGatewayHeadLine)
 		result := ListNatGateway(c.sess)
 		excel.SetListRows(c.outputFile, c.OutputSheet,result)
-	case "Liv2SGs":
+	case "Liv2SG":
 		//c.OutputSheet = "VPC-SG"
 		excel.SetHeadLine(c.outputFile, c.OutputSheet,SGHeadLine)
 		result := Listv2SGs(c.sess)
 		excel.SetStructRows(c.outputFile, c.OutputSheet,result)
-	case "ListAlarms":
+	case "ListAlarm":
 		//c.OutputSheet = "CloudWatch-Alarm"
 		excel.SetHeadLine(c.outputFile, c.OutputSheet,AlarmHeadLine)
 		result := ListAlarms(c.sess)
 		excel.SetListRows(c.outputFile, c.OutputSheet,result)
-	case "ListCLBs":
+	case "ListCLB":
 		//c.OutputSheet = "ELB"
 		excel.SetHeadLine(c.outputFile, c.OutputSheet,CLBHeadLine)
 		result := ListCLBs(c.sess)
 		excel.SetListRows(c.outputFile, c.OutputSheet,result)
-	case "Liv2LBv2s":
+	case "Liv2LBv2":
 		//c.OutputSheet = "ELB"
 		excel.SetHeadLine(c.outputFile, c.OutputSheet,LBv2HeadLine)
 		result := Listv2LBv2s(c.sess)
@@ -203,34 +211,34 @@ func (c *ExcelConfig) ReturnResources () (result [][]interface{}){
 	}
 	c.init()
 	switch c.Operate {
-	case "ListInstances":
+	case "ListEC2":
 		c.HeadLine = EC2HeadLine
 		result = ListInstances(c.sess)
-	case "ListDBs":
-		c.HeadLine = DBHeadLine
-		result = ListDBs(c.sess)
-	case "ListECCs":
+	case "ListDB":
+		c.HeadLine = DBInstanceHeadLine
+		result = ListDBInstances(c.sess)
+	case "ListECC":
 		c.HeadLine = ECCHeadLine
 		result = ListECCs(c.sess)
-	case "ListVolumes":
+	case "ListVolume":
 		c.HeadLine = VolumeHeadLine
 		result = ListVolumes(c.sess)
-	case "ListSnapshots":
+	case "ListSnapshot":
 		c.HeadLine = SnapshotHeadLine
 		result = ListSnapshots(c.sess)
-	case "ListAMIs":
+	case "ListAMI":
 		c.HeadLine = AMIHeadLine
 		result = ListAMIs(c.sess)
-	case "ListEIPs":
+	case "ListEIP":
 		c.HeadLine = EIPHeadLine
 		result = ListEIPs(c.sess)
-	case "ListKeyPairs":
+	case "ListKeyPair":
 		c.HeadLine = KeyPairHeadLine
 		result = ListKeyPairs(c.sess)
-	case "ListSubNets":
+	case "ListSubNet":
 		c.HeadLine = SubnetHeadLine
 		result = ListSubNets(c.sess)
-	case "ListRouteTables":
+	case "ListRouteTable":
 		c.HeadLine = RouteTableHeadLine
 		result = ListRouteTables(c.sess)
 	case "ListVPCPeering":
@@ -239,10 +247,10 @@ func (c *ExcelConfig) ReturnResources () (result [][]interface{}){
 	case "ListNatGateway":
 		c.HeadLine = NatGatewayHeadLine
 		result = ListNatGateway(c.sess)
-	case "ListAlarms":
+	case "ListAlarm":
 		c.HeadLine = AlarmHeadLine
 		result = ListAlarms(c.sess)
-	case "ListCLBs":
+	case "ListCLB":
 		c.HeadLine = CLBHeadLine
 		result = ListCLBs(c.sess)
 	default:
