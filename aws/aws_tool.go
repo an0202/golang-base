@@ -98,8 +98,8 @@ func (c *ExcelConfig) init() {
 }
 
 func (c *ExcelConfig) Do(outputFile string) {
-	if len(c.Operate) == 0 {
-		tools.WarningLogger.Println("Missing Operation Instructions , Skip This Operate :", *c)
+	if len(c.Operate) == 0 || len(c.Region) == 0 {
+		tools.WarningLogger.Println("Missing Operation Or Region Instructions , Skip This Operate :", *c)
 		return
 	}
 	c.init()
@@ -214,7 +214,7 @@ func (c *ExcelConfig) ReturnResources () (result [][]interface{}){
 	case "ListEC2":
 		c.HeadLine = EC2HeadLine
 		result = ListInstances(c.sess)
-	case "ListDB":
+	case "ListDBInstance":
 		c.HeadLine = DBInstanceHeadLine
 		result = ListDBInstances(c.sess)
 	case "ListECC":
@@ -257,6 +257,32 @@ func (c *ExcelConfig) ReturnResources () (result [][]interface{}){
 		tools.WarningLogger.Println("Unsupported Operate:", c.Operate)
 	}
 	return  result
+}
+
+func (c *ExcelConfig) ReturnResourcesV2 () (result []interface{}){
+	if len(c.Operate) == 0 {
+		tools.WarningLogger.Println("Missing Operation Instructions , Skip This Operate :", *c)
+		return
+	}
+	c.init()
+	switch c.Operate {
+	case "Liv2LBv2":
+		//c.OutputSheet = "ELB"
+		c.HeadLine = LBv2HeadLine
+		result = Listv2LBv2s(c.sess)
+	case "Liv2SNS":
+		c.HeadLine = SNSHeadLine
+		result = Listv2SNS(c.sess)
+	//case "Liv2SQS":
+	//	excel.SetHeadLine(c.outputFile, c.OutputSheet,SQSHeadLine)
+	//	result = Listv2SQS(c.sess)
+	case "Liv2S3":
+		c.HeadLine = S3HeadLine
+		result = Listv2S3(c.sess)
+	default:
+		tools.WarningLogger.Println("Unsupported Operate:", c.Operate)
+	}
+	return result
 }
 
 //GetARNDetail return a map contains ARN base information

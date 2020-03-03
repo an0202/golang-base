@@ -55,6 +55,34 @@ func SetStructRows(path, sheetname string, rows []interface{}) {
 	}
 }
 
+// Set Rows From Golang Struct V2 （Start Cell Can Be Specified）
+func SetStructRowsV2(path, sheetname, startColumn string, startRow int, rows []interface{}) {
+	f, err := excelize.OpenFile(path)
+	if err != nil {
+		fmt.Println(err)
+	}
+	if f.GetSheetIndex(sheetname) == 0 {
+		f.NewSheet(sheetname)
+	}
+	for index, row := range rows {
+		rowList = nil
+		v := reflect.ValueOf(row)
+		for i := 0; i < v.NumField(); i++ {
+			//fmt.Println(i, v.Field(i))
+			rowList = append(rowList, v.Field(i).Interface())
+		}
+		// fmt.Println(rowList)
+		err := f.SetSheetRow(sheetname, startColumn+strconv.Itoa(index+startRow), &rowList)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+	err = f.Save()
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
 // Set Rows From Golang List
 func SetListRows(path, sheetname string, rows [][]interface{}) {
 	f, err := excelize.OpenFile(path)
@@ -92,7 +120,6 @@ func SetListRowsV2(path, sheetname, startColumn string, startRow int, rows [][]i
 		}
 	}
 	err = f.Save()
-	fmt.Println(f.GetSheetIndex("Sheet1"))
 	if err != nil {
 		fmt.Println(err)
 	}

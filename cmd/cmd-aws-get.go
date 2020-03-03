@@ -13,6 +13,7 @@ import (
 	"golang-base/excel"
 	"golang-base/tools"
 	"os"
+	"strings"
 )
 
 func initResources() {
@@ -63,7 +64,35 @@ func GetAWSResources() {
 			op := tools.UniqueStringList(operateList)
 			if len(op) != 1 {
 				tools.ErrorLogger.Fatalln("OperateList Must Be Same , Current OperateList Is",op)
-			} else {
+				return
+			}
+			// switchCase for List and Liv2
+			switch strings.HasPrefix(op[0], "Liv2") {
+			case true:
+				rowsNum := 1
+				var totalHeadLine []interface{}
+				var outputFile = "output.xlsx"
+				excel.CreateFile(outputFile)
+				for _, config := range configs {
+					c := aws.ExcelConfigMarshal(config)
+					results := c.ReturnResourcesV2()
+					// use last result as totalHeadline
+					if c.HeadLine != nil {
+						totalHeadLine = c.HeadLine
+					}
+					if len(results) != 0 {
+						tools.InfoLogger.Printf("Found %d Result In %s (%s) \n", len(results),c.AccountId,c.Region)
+						excel.SetHeadLine(outputFile, c.OutputSheet, c.HeadLine)
+						excel.SetStructRows(outputFile, c.OutputSheet, results)
+						// Write summary data to Total sheet
+						excel.SetStructRowsV2(outputFile,"Total","A",rowsNum+1,results)
+						rowsNum += len(results)
+					} else {
+						tools.InfoLogger.Printf("No Result In %s (%s) \n", c.AccountId,c.Region)
+					}
+				}
+				excel.SetHeadLine(outputFile,"Total", totalHeadLine)
+			case false:
 				rowsNum := 1
 				var totalHeadLine []interface{}
 				var outputFile = "output.xlsx"
