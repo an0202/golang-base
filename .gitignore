@@ -20,6 +20,9 @@ __debug_bin
 *.json
 *.xlsx
 
+#build file
+aws_main
+main
 
 #IDE
 .idea/
