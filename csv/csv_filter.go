@@ -90,7 +90,9 @@ func main() {
 				if operateMatch == true {
 					resourceMatch, _ := regexp.MatchString(`^i-.*`, record[21])
 					if resourceMatch == true {
-						writer.Write(record)
+						if record[22] != "No" {
+							writer.Write(record)
+						}
 					}
 				}
 			}
