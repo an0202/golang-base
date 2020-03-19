@@ -15,31 +15,30 @@ import (
 
 //Region Abbreviation
 var RegionAbb = map[string]string{
-	"cn-north-1": "CNN1",
+	"cn-north-1":     "CNN1",
 	"cn-northwest-1": "CNW1",
 }
 
-
 // Excel HeadLine For AWS Resource
 var EC2HeadLine = []interface{}{"AccountId", "Region", "Name", "InstanceId", "InstanceType", "Platform", "State",
-	"VPCId","Role","SubnetId","PrivateIp","PublicIp","KeyPair","SecurityGroups","Tags"}
+	"VPCId", "Role", "SubnetId", "PrivateIp", "PublicIp", "KeyPair", "SecurityGroups", "Tags"}
 
 var DBInstanceHeadLine = []interface{}{"AccountId", "Region", "Name", "Type", "EndPoint", "Engine", "EngineVersion",
-	"Port","SubnetGroup","AvailabilityZone","MultiAZ","Status","StorageType","BackupWindow","BackupPeriod","MaintenanceWindow",
-	"ParameterGroups","SecurityGroups"}
+	"Port", "SubnetGroup", "AvailabilityZone", "MultiAZ", "Status", "StorageType", "BackupWindow", "BackupPeriod", "MaintenanceWindow",
+	"ParameterGroups", "SecurityGroups"}
 
-var DBClusterHeadline = []interface{}{"AccountId", "Region", "Identifier", "Endpoint", "ReaderEndPoint", "EngineMode","Engine",
-	"EngineVersion", "Port","MultiAZ","Status","MaintenanceWindow","BackupWindow","BackupPeriod", "ParameterGroups",
-	"AvailabilityZone","SecurityGroups","Members"}
+var DBClusterHeadline = []interface{}{"AccountId", "Region", "Identifier", "Endpoint", "ReaderEndPoint", "EngineMode", "Engine",
+	"EngineVersion", "Port", "MultiAZ", "Status", "MaintenanceWindow", "BackupWindow", "BackupPeriod", "ParameterGroups",
+	"AvailabilityZone", "SecurityGroups", "Members"}
 
 var ECCHeadLine = []interface{}{"AccountId", "Region", "CacheClusterId", "CacheNodesNumber", "CacheNodeType", "Engine",
-	"EngineVersion", "CacheSubnetGroup","MaintenanceWindow","SnapshotRetention","SecurityGroups"}
+	"EngineVersion", "CacheSubnetGroup", "MaintenanceWindow", "SnapshotRetention", "SecurityGroups"}
 
 var KeyPairHeadLine = []interface{}{"AccountId", "Region", "KeyName", "Fingerprint"}
 
 var SnapshotHeadLine = []interface{}{"AccountId", "Region", "SnapshotId", "VolumeId", "Description", "State"}
 
-var VolumeHeadLine = []interface{}{"AccountId", "Region", "Name","VolumeId","AttachedInstance","State", "Type", "Size",
+var VolumeHeadLine = []interface{}{"AccountId", "Region", "Name", "VolumeId", "AttachedInstance", "State", "Type", "Size",
 	"AvailabilityZone"}
 
 var AMIHeadLine = []interface{}{"AccountId", "Region", "ImageId", "Name", "State"}
@@ -59,42 +58,42 @@ var SGHeadLine = []interface{}{"GroupName", "VpcId", "GroupId", "Protocol", "Sou
 
 var AlarmHeadLine = []interface{}{"AccountId", "Region", "AlarmName", "NameSpace", "MetricName", "Actions", "Dimensions"}
 
-var CLBHeadLine = []interface{}{"AccountId", "Region", "VPCId", "LoadBalancerName", "DNSName","Scheme", "AvailabilityZone",
-	"SecurityGroups", "Listner","HealthCheck","Instances"}
+var CLBHeadLine = []interface{}{"AccountId", "Region", "VPCId", "LoadBalancerName", "DNSName", "Scheme", "AvailabilityZone",
+	"SecurityGroups", "Listner", "HealthCheck", "Instances"}
 
-var LBv2HeadLine = []interface{}{"AccountId", "Region", "VPCId", "LoadBalancerName", "DNSName","ARN","Type","Scheme",
-	"AvailabilityZone", "SecurityGroups", "Listener","TargetGroups","Backends"}
+var LBv2HeadLine = []interface{}{"AccountId", "Region", "VPCId", "LoadBalancerName", "DNSName", "ARN", "Type", "Scheme",
+	"AvailabilityZone", "SecurityGroups", "Listener", "TargetGroups", "Backends"}
 
-var SNSHeadLine = []interface{}{"AccountId", "Region", "TopicName","Policy","ARN","Subscriptions"}
+var SNSHeadLine = []interface{}{"AccountId", "Region", "TopicName", "Policy", "ARN", "Subscriptions"}
 
 //var SQSHeadLine = []interface{}{"AccountId", "Region", "TopicName","Policy","ARN","Subscriptions"}
 
-var S3HeadLine = []interface{}{"AccountId", "Region", "BucketName","ACL","Policy","CORS","LifeCycle","Versioning","WebSite"}
+var S3HeadLine = []interface{}{"AccountId", "Region", "BucketName", "ACL", "Policy", "CORS", "LifeCycle", "Versioning", "WebSite"}
 
 type ExcelConfig struct {
-	AWSProfile          string
-	Region              string
-	Operate   			string
-	Comment             string
-	outputFile          string
-	OutputSheet		    string
-	HeadLine            []interface{}
-	sess                Session
-	AccountId           string
+	AWSProfile  string
+	Region      string
+	Operate     string
+	Comment     string
+	outputFile  string
+	OutputSheet string
+	HeadLine    []interface{}
+	sess        Session
+	AccountId   string
 }
 
 func (c *ExcelConfig) init() {
-	se := c.sess.InitSessionWithAWSProfile(c.Region,c.AWSProfile)
+	se := c.sess.InitSessionWithAWSProfile(c.Region, c.AWSProfile)
 	c.Region = se.UsedRegion
-	if regionAbb, ok := RegionAbb[se.UsedRegion]; ok{
+	if regionAbb, ok := RegionAbb[se.UsedRegion]; ok {
 		c.Region = regionAbb
-	}else{
+	} else {
 		c.Region = se.UsedRegion
 	}
 	c.AWSProfile = se.UsedAwsProfile
 	c.AccountId = se.AccountId
-	c.OutputSheet = c.Operate[4:]+"-"+se.AccountId+"-"+c.Region
-	tools.InfoLogger.Printf("%s From Account: %s (%s) \n",c.Operate,c.AccountId,c.Region)
+	c.OutputSheet = c.Operate[4:] + "-" + se.AccountId + "-" + c.Region
+	tools.InfoLogger.Printf("%s From Account: %s (%s) \n", c.Operate, c.AccountId, c.Region)
 }
 
 func (c *ExcelConfig) Do(outputFile string) {
@@ -107,104 +106,104 @@ func (c *ExcelConfig) Do(outputFile string) {
 	switch c.Operate {
 	case "ListEC2":
 		//c.OutputSheet = "EC2"
-		excel.SetHeadLine(c.outputFile, c.OutputSheet,EC2HeadLine)
+		excel.SetHeadLine(c.outputFile, c.OutputSheet, EC2HeadLine)
 		result := ListInstances(c.sess)
-		excel.SetListRows(c.outputFile, c.OutputSheet,result)
+		excel.SetListRows(c.outputFile, c.OutputSheet, result)
 	case "ListDBInstance":
 		//c.OutputSheet = "RDS"
-		excel.SetHeadLine(c.outputFile, c.OutputSheet,DBInstanceHeadLine)
+		excel.SetHeadLine(c.outputFile, c.OutputSheet, DBInstanceHeadLine)
 		result := ListDBInstances(c.sess)
-		excel.SetListRows(c.outputFile, c.OutputSheet,result)
+		excel.SetListRows(c.outputFile, c.OutputSheet, result)
 	case "Liv2DBCluster":
-		excel.SetHeadLine(c.outputFile, c.OutputSheet,DBClusterHeadline)
+		excel.SetHeadLine(c.outputFile, c.OutputSheet, DBClusterHeadline)
 		result := Listv2DBClusters(c.sess)
-		excel.SetStructRows(c.outputFile, c.OutputSheet,result)
+		excel.SetStructRows(c.outputFile, c.OutputSheet, result)
 	case "ListECC":
 		//c.OutputSheet = "ECC"
-		excel.SetHeadLine(c.outputFile, c.OutputSheet,ECCHeadLine)
+		excel.SetHeadLine(c.outputFile, c.OutputSheet, ECCHeadLine)
 		result := ListECCs(c.sess)
-		excel.SetListRows(c.outputFile, c.OutputSheet,result)
+		excel.SetListRows(c.outputFile, c.OutputSheet, result)
 	case "ListVolume":
 		//c.OutputSheet = "EC2-Volume"
-		excel.SetHeadLine(c.outputFile, c.OutputSheet,VolumeHeadLine)
+		excel.SetHeadLine(c.outputFile, c.OutputSheet, VolumeHeadLine)
 		result := ListVolumes(c.sess)
-		excel.SetListRows(c.outputFile, c.OutputSheet,result)
+		excel.SetListRows(c.outputFile, c.OutputSheet, result)
 	case "ListSnapshot":
 		//c.OutputSheet = "EC2-Snapshot"
-		excel.SetHeadLine(c.outputFile, c.OutputSheet,SnapshotHeadLine)
+		excel.SetHeadLine(c.outputFile, c.OutputSheet, SnapshotHeadLine)
 		result := ListSnapshots(c.sess)
-		excel.SetListRows(c.outputFile, c.OutputSheet,result)
+		excel.SetListRows(c.outputFile, c.OutputSheet, result)
 	case "ListAMI":
 		//c.OutputSheet = "EC2-AMI"
-		excel.SetHeadLine(c.outputFile, c.OutputSheet,AMIHeadLine)
+		excel.SetHeadLine(c.outputFile, c.OutputSheet, AMIHeadLine)
 		result := ListAMIs(c.sess)
-		excel.SetListRows(c.outputFile, c.OutputSheet,result)
+		excel.SetListRows(c.outputFile, c.OutputSheet, result)
 	case "ListEIP":
 		//c.OutputSheet = "EC2-EIP"
-		excel.SetHeadLine(c.outputFile, c.OutputSheet,EIPHeadLine)
+		excel.SetHeadLine(c.outputFile, c.OutputSheet, EIPHeadLine)
 		result := ListEIPs(c.sess)
-		excel.SetListRows(c.outputFile, c.OutputSheet,result)
+		excel.SetListRows(c.outputFile, c.OutputSheet, result)
 	case "ListKeyPair":
 		//c.OutputSheet = "EC2-KeyPairs"
-		excel.SetHeadLine(c.outputFile, c.OutputSheet,KeyPairHeadLine)
+		excel.SetHeadLine(c.outputFile, c.OutputSheet, KeyPairHeadLine)
 		result := ListKeyPairs(c.sess)
-		excel.SetListRows(c.outputFile, c.OutputSheet,result)
+		excel.SetListRows(c.outputFile, c.OutputSheet, result)
 	case "ListSubNet":
 		//c.OutputSheet = "VPC-SubNet"
-		excel.SetHeadLine(c.outputFile, c.OutputSheet,SubnetHeadLine)
+		excel.SetHeadLine(c.outputFile, c.OutputSheet, SubnetHeadLine)
 		result := ListSubNets(c.sess)
-		excel.SetListRows(c.outputFile, c.OutputSheet,result)
+		excel.SetListRows(c.outputFile, c.OutputSheet, result)
 	case "ListRouteTable":
 		//c.OutputSheet = "VPC-RouteTable"
-		excel.SetHeadLine(c.outputFile, c.OutputSheet,RouteTableHeadLine)
+		excel.SetHeadLine(c.outputFile, c.OutputSheet, RouteTableHeadLine)
 		result := ListRouteTables(c.sess)
-		excel.SetListRows(c.outputFile, c.OutputSheet,result)
+		excel.SetListRows(c.outputFile, c.OutputSheet, result)
 	case "ListVPCPeering":
-		excel.SetHeadLine(c.outputFile, c.OutputSheet,PeeringConnectionHeadLine)
+		excel.SetHeadLine(c.outputFile, c.OutputSheet, PeeringConnectionHeadLine)
 		result := ListVPCPeering(c.sess)
-		excel.SetListRows(c.outputFile, c.OutputSheet,result)
+		excel.SetListRows(c.outputFile, c.OutputSheet, result)
 	case "ListNatGateway":
-		excel.SetHeadLine(c.outputFile, c.OutputSheet,NatGatewayHeadLine)
+		excel.SetHeadLine(c.outputFile, c.OutputSheet, NatGatewayHeadLine)
 		result := ListNatGateway(c.sess)
-		excel.SetListRows(c.outputFile, c.OutputSheet,result)
+		excel.SetListRows(c.outputFile, c.OutputSheet, result)
 	case "Liv2SG":
 		//c.OutputSheet = "VPC-SG"
-		excel.SetHeadLine(c.outputFile, c.OutputSheet,SGHeadLine)
+		excel.SetHeadLine(c.outputFile, c.OutputSheet, SGHeadLine)
 		result := Listv2SGs(c.sess)
-		excel.SetStructRows(c.outputFile, c.OutputSheet,result)
+		excel.SetStructRows(c.outputFile, c.OutputSheet, result)
 	case "ListAlarm":
 		//c.OutputSheet = "CloudWatch-Alarm"
-		excel.SetHeadLine(c.outputFile, c.OutputSheet,AlarmHeadLine)
+		excel.SetHeadLine(c.outputFile, c.OutputSheet, AlarmHeadLine)
 		result := ListAlarms(c.sess)
-		excel.SetListRows(c.outputFile, c.OutputSheet,result)
+		excel.SetListRows(c.outputFile, c.OutputSheet, result)
 	case "ListCLB":
 		//c.OutputSheet = "ELB"
-		excel.SetHeadLine(c.outputFile, c.OutputSheet,CLBHeadLine)
+		excel.SetHeadLine(c.outputFile, c.OutputSheet, CLBHeadLine)
 		result := ListCLBs(c.sess)
-		excel.SetListRows(c.outputFile, c.OutputSheet,result)
+		excel.SetListRows(c.outputFile, c.OutputSheet, result)
 	case "Liv2LBv2":
 		//c.OutputSheet = "ELB"
-		excel.SetHeadLine(c.outputFile, c.OutputSheet,LBv2HeadLine)
+		excel.SetHeadLine(c.outputFile, c.OutputSheet, LBv2HeadLine)
 		result := Listv2LBv2s(c.sess)
-		excel.SetStructRows(c.outputFile, c.OutputSheet,result)
+		excel.SetStructRows(c.outputFile, c.OutputSheet, result)
 	case "Liv2SNS":
-		excel.SetHeadLine(c.outputFile, c.OutputSheet,SNSHeadLine)
+		excel.SetHeadLine(c.outputFile, c.OutputSheet, SNSHeadLine)
 		result := Listv2SNS(c.sess)
-		excel.SetStructRows(c.outputFile, c.OutputSheet,result)
+		excel.SetStructRows(c.outputFile, c.OutputSheet, result)
 	//case "Liv2SQS":
 	//	excel.SetHeadLine(c.outputFile, c.OutputSheet,SQSHeadLine)
 	//	result := Listv2SQS(c.sess)
 	//	excel.SetStructRows(c.outputFile, c.OutputSheet,result)
 	case "Liv2S3":
-		excel.SetHeadLine(c.outputFile, c.OutputSheet,S3HeadLine)
+		excel.SetHeadLine(c.outputFile, c.OutputSheet, S3HeadLine)
 		result := Listv2S3(c.sess)
-		excel.SetStructRows(c.outputFile, c.OutputSheet,result)
+		excel.SetStructRows(c.outputFile, c.OutputSheet, result)
 	default:
 		tools.WarningLogger.Println("Unsupported Operate:", c.Operate)
 	}
 }
 
-func (c *ExcelConfig) ReturnResources () (result [][]interface{}){
+func (c *ExcelConfig) ReturnResources() (result [][]interface{}) {
 	if len(c.Operate) == 0 {
 		tools.WarningLogger.Println("Missing Operation Instructions , Skip This Operate :", *c)
 		return
@@ -256,10 +255,10 @@ func (c *ExcelConfig) ReturnResources () (result [][]interface{}){
 	default:
 		tools.WarningLogger.Println("Unsupported Operate:", c.Operate)
 	}
-	return  result
+	return result
 }
 
-func (c *ExcelConfig) ReturnResourcesV2 () (result []interface{}){
+func (c *ExcelConfig) ReturnResourcesV2() (result []interface{}) {
 	if len(c.Operate) == 0 {
 		tools.WarningLogger.Println("Missing Operation Instructions , Skip This Operate :", *c)
 		return
@@ -294,7 +293,7 @@ func GetARNDetail(arn string) (arnMap map[string]string) {
 	matched := re.MatchString(arn)
 	arnMap = make(map[string]string)
 	if matched == false {
-		tools.ErrorLogger.Fatalln(arn," Is Not A AWS ARN.")
+		tools.ErrorLogger.Fatalln(arn, " Is Not A AWS ARN.")
 	} else {
 		groupNames := re.SubexpNames()
 		match := re.FindStringSubmatch(arn)
@@ -323,9 +322,8 @@ func ExcelConfigMarshal(excelConfig map[string]string) (config ExcelConfig) {
 		case "Comment":
 			config.Comment = excelConfig["Comment"]
 		default:
-			tools.WarningLogger.Printf("Unsupported Configuration: %s - %s",k ,v)
+			tools.WarningLogger.Printf("Unsupported Configuration: %s - %s", k, v)
 		}
 	}
 	return config
 }
-
