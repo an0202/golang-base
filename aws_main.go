@@ -18,7 +18,7 @@ func main() {
 	//var headerline = []interface{}{"GroupName", "VpcId", "GroupId", "Protocol", "Source", "FromPort", "ToPort"}
 	//sess := aws.InitSession("cn-north-1")
 	//a := aws.GetSGPolicys(sess)
-    cmd.GetAWSResources()
+    cmd.CSVFilter()
 }
 
 ////Functional Options

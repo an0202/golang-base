@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"golang-base/tools"
 	"io"
+	"math"
 	"os"
 )
 
@@ -25,11 +26,22 @@ func PrintTitle(inputFile string) {
 		}
 		tools.ErrorLogger.Fatalln(err)
 	}
+	tools.InfoLogger.Println("Title:")
 	for id, value := range record {
-		tools.InfoLogger.Println("Title:")
 		fmt.Println(id, value)
 	}
 }
+
+// RateOfProgress is a counter for progress, such as a progress bar
+func RateOfProgress(inputFile string) int {
+	lineCount := tools.CountRecord(inputFile)
+	if lineCount > 100000 {
+		oneTenthCount := float64(lineCount / 10)
+		return int(math.Ceil(oneTenthCount))
+	}
+	return 0
+}
+
 
 //
 //ReadToMaps read csv file line by line and return data with map in a list

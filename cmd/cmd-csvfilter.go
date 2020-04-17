@@ -1,9 +1,9 @@
 /**
  * @Author: jie.an
  * @Description:
- * @File:  cmd-csv
+ * @File:  cmd-csvfilter
  * @Version: 1.0.0
- * @Date: 2020/03/16 14:36 下午
+ * @Date: 2020/04/17 12:30 下午
  */
 package cmd
 
@@ -14,22 +14,23 @@ import (
 	"golang-base/tools"
 	"io"
 	"os"
-	"regexp"
 	"strings"
 )
 
-func initSamsungBill() {
+func initCsvFilter() {
 	inputFile = flag.String("file", "beijing.csv", "Source File To Be Processed")
-	accountIDs = flag.String("id", "405718244235,0123456789", "Linked Account IDs Split With \",\"")
+	column = flag.Int("col", 0 , "Column To Be Processed")
+	include = flag.String("inc", "405718244235,0123456789", "Linked Account IDs Split With \",\"")
 	help = flag.Bool("h", false, "Print This Message")
 }
 
-func SamsungBillFilter() {
-	initSamsungBill()
-	// Parse flag
+func CSVFilter() {
+	initCsvFilter()
+	// Parse flag and title line
 	flag.Parse()
 	if *help == true {
 		flag.Usage()
+		csvtool.PrintTitle(*inputFile)
 		os.Exit(1)
 	}
 	if flag.NFlag() == 0 {
@@ -76,17 +77,9 @@ func SamsungBillFilter() {
 			if (baseRateCount != 0) && (lineCount%baseRateCount == 0) {
 				tools.InfoLogger.Println("Processing , Processed Rows :", lineCount)
 			}
-			accountList := strings.Split(*accountIDs, ",")
-			if tools.StringFind(accountList, record[2]) {
-				operateMatch, _ := regexp.MatchString(`.*Run.*`, record[10])
-				if operateMatch == true {
-					resourceMatch, _ := regexp.MatchString(`^i-.*`, record[21])
-					if resourceMatch == true {
-						if record[22] != "No" {
-							writer.Write(record)
-						}
-					}
-				}
+			includeList := strings.Split(*include, ",")
+			if tools.StringFind(includeList, record[*column]) {
+				writer.Write(record)
 			}
 		}
 		lineCount++

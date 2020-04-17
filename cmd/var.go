@@ -35,4 +35,12 @@ var (
 	summary    *bool
 )
 
+//awsBill
+var (
+	inputFile  *string
+	accountIDs *string
+	column     *int
+	include    *string
+)
+
 
