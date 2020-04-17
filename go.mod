@@ -12,6 +12,7 @@ require (
 	github.com/cihub/seelog v0.0.0-20170130134532-f561c5e57575 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/fortytw2/leaktest v1.3.0 // indirect
+	github.com/gin-contrib/cors v1.3.1 // indirect
 	github.com/gin-gonic/gin v1.5.0 // indirect
 	github.com/gocolly/colly/v2 v2.0.1
 	github.com/golang/protobuf v1.3.2 // indirect

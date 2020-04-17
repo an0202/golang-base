@@ -1,4 +1,11 @@
-package main
+/**
+ * @Author: jie.an
+ * @Description:
+ * @File:  cmd-csv
+ * @Version: 1.0.0
+ * @Date: 2020/03/16 14:36 下午
+ */
+package cmd
 
 import (
 	"encoding/csv"
@@ -12,9 +19,8 @@ import (
 )
 
 var (
-	inputFile *string
+	inputFile  *string
 	accountIDs *string
-	help      *bool
 )
 
 func init() {
@@ -33,7 +39,7 @@ func RateOfProgress(inputFile string) int {
 	return 0
 }
 
-func main() {
+func AWSBillFilter() {
 	// Parse flag
 	flag.Parse()
 	if *help == true {
@@ -84,9 +90,9 @@ func main() {
 			if (baseRateCount != 0) && (lineCount%baseRateCount == 0) {
 				tools.InfoLogger.Println("Processing , Processed Rows :", lineCount)
 			}
-			accountList := strings.Split(*accountIDs,",")
+			accountList := strings.Split(*accountIDs, ",")
 			if tools.StringFind(accountList, record[2]) {
-				operateMatch, _:= regexp.MatchString(`.*Run.*`, record[10])
+				operateMatch, _ := regexp.MatchString(`.*Run.*`, record[10])
 				if operateMatch == true {
 					resourceMatch, _ := regexp.MatchString(`^i-.*`, record[21])
 					if resourceMatch == true {

@@ -1,4 +1,4 @@
-package main
+package csv
 
 import (
 	"encoding/csv"
@@ -31,70 +31,75 @@ func PrintTitle(inputFile string) {
 	}
 }
 
-// CountRecord return total records number of csv file
-// func CountRecord(inputFile string) int {
-// 	// Read CSV File
-// 	inputCSV, inputError := os.OpenFile(inputFile, os.O_RDONLY, 0666)
-// 	if inputError != nil {
-// 		fmt.Println("[Error] Error While Open CSV File")
-// 		os.Exit(2)
-// 	}
-// 	defer inputCSV.Close()
-// 	// Init CSV Reader
-// 	reader := csv.NewReader(inputCSV)
-// 	// Count Line
-// 	linecount := 1
-// 	for {
-// 		_, err := reader.Read()
-// 		if err != nil {
-// 			if err == io.EOF {
-// 				break
-// 			}
-// 			fmt.Println(err)
-// 		}
-// 		linecount++
-// 	}
-// 	fmt.Println("Total Record(Exclude Title):", linecount-1)
-// 	return linecount - 1
-// }
-
-// PrintNRecord return the Nth row of data
-// func PrintNRecord(inputFile string, N int) {
-// 	// Handle Error
-// 	recordNum := tools.CountRecord(inputFile)
-// 	if N > recordNum {
-// 		tools.ErrorLogger.Fatalln("Out Of Range")
-// 	}
-// 	// Read CSV File
-// 	inputCSV, inputError := os.OpenFile(inputFile, os.O_RDONLY, 0666)
-// 	if inputError != nil {
-// 		tools.ErrorLogger.Fatalln("Error While Open CSV File")
-// 	}
-// 	defer inputCSV.Close()
-// 	// Init CSV Reader
-// 	reader := csv.NewReader(inputCSV)
-// 	//
-// 	linecount := 1
-// 	for {
-// 		record, err := reader.Read()
-// 		if err != nil {
-// 			if err == io.EOF {
-// 				break
-// 			}
-// 			fmt.Println(err)
-// 		}
-// 		if linecount == N {
-// 			tools.InfoLogger.Println("The Nth Row Of Data:")
-// 			fmt.Println("Record :", record)
-// 			break
-// 		}
-// 		linecount++
-// 	}
-// }
-
-// func main() {
-// 	inputFile := "azure_bill.csv"
-// 	// PrintTitle(inputFile)
-// 	tools.PrintNRecord(inputFile, 11332)
-// 	// tools.CountRecord(inputFile)
-// }
+//
+//ReadToMaps read csv file line by line and return data with map in a list
+//
+//CSV:
+//
+//	A     B     C
+//
+//1  Name   Age   Sex
+//
+//2  Alice  18    Female
+//
+//3  Bob    22    Male
+//
+//ReturnData:
+//[
+//
+//	{"Name":"Alice","Age":"18","Sex":"Female"},
+//	{"Name":"Bob","Age":"22","Sex":"Male"}
+//
+//]
+//
+//todo: https://gist.github.com/drernie/5684f9def5bee832ebc50cabb46c377a
+//func ReadToMaps(csvfile) (rowmaps []map[string]string) {
+//	// Read CSV File
+//	inputCSV, inputError := os.OpenFile(inputFile, os.O_RDONLY, 0666)
+//	if inputError != nil {
+//		tools.ErrorLogger.Fatalln("Error While Open CSV File")
+//	}
+//	defer inputCSV.Close()
+//	// Init CSV Reader
+//	reader := csv.NewReader(inputCSV)
+//	f, err := excelize.OpenFile(excelfile)
+//	if err != nil {
+//		tools.ErrorLogger.Fatalln(err)
+//	}
+//	// headline type
+//	headline := make(map[int]string)
+//	tmprows, tmperr := f.Rows(sheetname)
+//	if tmperr != nil {
+//		tools.ErrorLogger.Fatalln(tmperr)
+//	}
+//	headrow, headerr := tmprows.Columns()
+//	if headerr != nil {
+//		tools.ErrorLogger.Fatalln(headerr)
+//	}
+//	for k, v := range headrow {
+//		headline[k] = v
+//	}
+//	tools.InfoLogger.Println("HeadLine:", headline)
+//	// iter all rows
+//	//var rowmaps []map[string]string
+//	rows, err := f.GetRows(sheetname)
+//	if err != nil {
+//		tools.ErrorLogger.Fatalln(err)
+//	}
+//	for _, row := range rows {
+//		rowmap := make(map[string]string)
+//		for k, v := range row {
+//			//skip head line (title)
+//			if row[k] == headline[k] {
+//				continue
+//			} else {
+//				rowmap[headline[k]] = v
+//			}
+//		}
+//		if len(rowmap) != 0 {
+//			rowmaps = append(rowmaps, rowmap)
+//		}
+//	}
+//	// return rowdata in map with out headeline (title)
+//	return rowmaps
+//}
