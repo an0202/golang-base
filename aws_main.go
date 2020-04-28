@@ -13,12 +13,12 @@ export GOOS="darwin"
 go build -o phoneix-darwin
 */
 func main() {
-    //echo "done!"
+	//echo "done!"
 	////1. get policy
 	//var headerline = []interface{}{"GroupName", "VpcId", "GroupId", "Protocol", "Source", "FromPort", "ToPort"}
 	//sess := aws.InitSession("cn-north-1")
 	//a := aws.GetSGPolicys(sess)
-    cmd.CSVFilter()
+	cmd.SamsungBillFilter2()
 }
 
 ////Functional Options
@@ -71,4 +71,3 @@ func main() {
 //   x = NewStuffClient(Connection{}, WithRetries(1))
 //   fmt.Println(x) // prints &{{} 2 1}
 //}
-
