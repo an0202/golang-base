@@ -53,18 +53,38 @@ func startJob() {
 			v, _ := url.ParseQuery(req.URL.RawQuery)
 			if _, ok := v["access_token"]; ok {
 				client.SetAuthToken(v["access_token"][0])
-				client.SetCookie(&http.Cookie{
-					Name:   "access_token",
-					Value:  v["access_token"][0],
-					Path:   "/",
-					Domain: ".opsnow.cn",
-				})
-				client.SetCookie(&http.Cookie{
+				//client.SetCookie(&http.Cookie{
+				//	Name:   "access_token",
+				//	Value:  v["access_token"][0],
+				//	Path:   "/",
+				//	Domain: ".opsnow.cn",
+				//})
+				//client.SetCookie(&http.Cookie{
+				//	Name:   "access_token_type",
+				//	Value:  v["token_type"][0],
+				//	Path:   "/",
+				//	Domain: ".opsnow.cn",
+				//})
+				// add auth cookie to cookieJar for export
+				//https://gist.github.com/HugoPresents/a8a44c3c4cd514052952
+				//todo：https://github.com/juju/persistent-cookiejar
+				var cookies []*http.Cookie
+				cookie := &http.Cookie{
 					Name:   "access_token_type",
 					Value:  v["token_type"][0],
 					Path:   "/",
 					Domain: ".opsnow.cn",
-				})
+				}
+				cookies = append(cookies, cookie)
+				cookie = &http.Cookie{
+					Name:   "access_token",
+					Value:  v["access_token"][0],
+					Path:   "/",
+					Domain: ".opsnow.cn",
+				}
+				cookies = append(cookies, cookie)
+				url, _ := url.Parse("http://opsnow.cn")
+				client.GetClient().Jar.SetCookies(url, cookies)
 			}
 		}
 		//fmt.Println("Redirect Cookies:", client.GetClient().Jar)
@@ -83,7 +103,7 @@ func startJob() {
 	})
 	loginResp, err := client.R().
 		SetFormData(map[string]string{
-			"username":      "email@email.com",
+			"username":      "email@email",
 			"password":      "password@password",
 			"client_id":     "wGBi_35lOOIxomIJRQp_cHxwBJka",
 			"redirect_uri":  "https://www.opsnow.cn/dashboard",
@@ -110,6 +130,9 @@ func startJob() {
 	if err != nil {
 		fmt.Println("post err", err)
 	}
+	//todo export cookieJar and token
+	fmt.Println(client.GetClient().Jar)
+	fmt.Println(client.Token)
 }
 
 func main() {

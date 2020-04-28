@@ -54,6 +54,8 @@ func (ms *MSPBillings) ProcessMSPBillings(record []string) {
 	m.UsageType = record[9]
 	m.UsageStartDate = record[14]
 	m.ResourceId = record[21]
+	m.UserTag1 = record[22]
+	m.UserTag2 = record[23]
 	//update data if resourceId exist
 	if _, ok := ms.MSPBillings[m.ResourceId]; ok {
 		oldContent := ms.MSPBillings[m.ResourceId]
@@ -74,6 +76,8 @@ type MSPBilling struct {
 	UsageStartDate  string
 	RunningDates    map[string]bool
 	RunningDays     int
+	UserTag1        string
+	UserTag2        string
 }
 
 func NewMSPBilling() *MSPBilling {
