@@ -7,7 +7,10 @@
  */
 package tools
 
-import "math/rand"
+import (
+	"fmt"
+	"math/rand"
+)
 
 // Find takes a slice and looks for an element in it. If found it will
 // return it's key, otherwise it will return -1 and a bool of false.
@@ -60,4 +63,22 @@ func RandString(n int) string {
 		b[i] = letters[rand.Intn(len(letters))]
 	}
 	return string(b)
+}
+
+//converting a []string to a []interface{}
+func StrSliceToIfsSlice(StrSlice []string) (IfsSlice []interface{}) {
+	IfsSlice = make([]interface{}, len(StrSlice))
+	for i, v := range StrSlice {
+		IfsSlice[i] = v
+	}
+	return IfsSlice
+}
+
+//converting a []interface{} to a []string
+func IfsSliceToStrSlice(IfsSlice []interface{}) (StrSlice []string) {
+	StrSlice = make([]string, len(IfsSlice))
+	for i, v := range IfsSlice {
+		StrSlice[i] = fmt.Sprint(v)
+	}
+	return StrSlice
 }

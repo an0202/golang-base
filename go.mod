@@ -20,8 +20,10 @@ require (
 	github.com/jinzhu/gorm v1.9.12 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/mailru/easyjson v0.7.0 // indirect
+	github.com/mitchellh/mapstructure v1.3.0 // indirect
 	github.com/olivere/elastic v6.2.25+incompatible
 	github.com/pkg/errors v0.8.1 // indirect
+	github.com/spf13/cobra v1.0.0 // indirect
 	github.com/stretchr/testify v1.4.0 // indirect
 	golang.org/x/net v0.0.0-20200222125558-5a598a2470a0
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect

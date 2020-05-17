@@ -12,6 +12,7 @@ import (
 	"golang-base/tools"
 	"reflect"
 	"strconv"
+	"time"
 
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
 )
@@ -20,6 +21,17 @@ var rowList []interface{}
 
 func CreateFile(path string) {
 	f := excelize.NewFile()
+	//https://xuri.me/excelize/en/workbook.html#SetDocProps
+	f.SetDocProps(&excelize.DocProperties{
+		Created:        time.Now().String(),
+		Creator:        "Jie An",
+		Description:    "This file created by Go Excelize",
+		Identifier:     "xlsx",
+		Keywords:       "Spreadsheet",
+		LastModifiedBy: "Excelize",
+		Modified:       time.Now().String(),
+		Version:        "1.0.0",
+	})
 	err := f.SaveAs(path)
 	if err != nil {
 		fmt.Println(err)
@@ -149,7 +161,7 @@ func SetHeadLine(path, sheetname string, HeadLine []interface{}) {
 	err = f.SetCellStyle(sheetname, "A1", DescribeLastPosition(len(HeadLine)), style)
 	//always set sheet 2 as active sheet , used to hidden "Sheet1" , "Sheet1" can not be delete for now.
 	f.SetActiveSheet(2)
-	err = f.SetSheetVisible("Sheet1",false)
+	err = f.SetSheetVisible("Sheet1", false)
 	if err != nil {
 		fmt.Println(err)
 	}
