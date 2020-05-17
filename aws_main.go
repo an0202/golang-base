@@ -1,6 +1,6 @@
 package main
 
-import "golang-base/cmd"
+import "golang-base/excel"
 
 /*GCC
 export GOOS="windows"
@@ -17,8 +17,12 @@ func main() {
 	////1. get policy
 	//var headerline = []interface{}{"GroupName", "VpcId", "GroupId", "Protocol", "Source", "FromPort", "ToPort"}
 	//sess := aws.InitSession("cn-north-1")
-	//a := aws.GetSGPolicys(sess)
-	cmd.SamsungBillFilter2()
+	////a := aws.GetSGPolicys(sess)
+	//cmd.SamsungBillFilter2()
+	var filePath = "monitorData.xlsx"
+	var cpuAvgHeadLine = []interface{}{"ServerName", "CPU_AVG_PERCENT"}
+	excel.CreateFile(filePath)
+	excel.SetHeadLine(filePath, "CPU_AVG", cpuAvgHeadLine)
 }
 
 ////Functional Options

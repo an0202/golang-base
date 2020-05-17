@@ -9,12 +9,10 @@ package excel
 
 import (
 	"fmt"
+	"github.com/360EntSecGroup-Skylar/excelize/v2"
 	"golang-base/tools"
 	"reflect"
 	"strconv"
-	"time"
-
-	"github.com/360EntSecGroup-Skylar/excelize/v2"
 )
 
 var rowList []interface{}
@@ -23,14 +21,8 @@ func CreateFile(path string) {
 	f := excelize.NewFile()
 	//https://xuri.me/excelize/en/workbook.html#SetDocProps
 	f.SetDocProps(&excelize.DocProperties{
-		Created:        time.Now().String(),
-		Creator:        "Jie An",
-		Description:    "This file created by Go Excelize",
-		Identifier:     "xlsx",
-		Keywords:       "Spreadsheet",
-		LastModifiedBy: "Excelize",
-		Modified:       time.Now().String(),
-		Version:        "1.0.0",
+		Creator:     "Jie An",
+		Description: "This file created by Go Excelize",
 	})
 	err := f.SaveAs(path)
 	if err != nil {
