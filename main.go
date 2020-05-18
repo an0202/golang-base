@@ -1,8 +1,7 @@
 package main
 
 import (
-	"fmt"
-	"golang-base/excel"
+	"golang-base/cmd"
 )
 
 /*GCC
@@ -16,16 +15,7 @@ export GOOS="darwin"
 go build -o phoneix-darwin
 */
 func main() {
-	//echo "done!"
-	////1. get policy
-	//var headerline = []interface{}{"GroupName", "VpcId", "GroupId", "Protocol", "Source", "FromPort", "ToPort"}
-	//sess := aws.InitSession("cn-north-1")
-	////a := aws.GetSGPolicys(sess)
-	//cmd.SamsungBillFilter2()
-	a := excel.ReadToMaps("IncidentReport_1589784098.xlsx", "Sheet1")
-	for _, v := range a {
-		fmt.Printf("%#v \n\n", v)
-	}
+	cmd.SamsungBillFilter2()
 }
 
 ////Functional Options

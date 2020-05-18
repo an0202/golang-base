@@ -48,6 +48,7 @@ func ReadToMaps(excelFile, sheetName string) (rowMaps []map[string]string) {
 	if tmpErr != nil {
 		tools.ErrorLogger.Fatalln(tmpErr)
 	}
+	tmpRows.Next()
 	headRow, headErr := tmpRows.Columns()
 	if headErr != nil {
 		tools.ErrorLogger.Fatalln(headErr)
