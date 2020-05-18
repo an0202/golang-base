@@ -135,7 +135,7 @@ func SetHeadLine(path, sheetname string, HeadLine []interface{}) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	if f.GetSheetIndex(sheetname) == 0 {
+	if f.GetSheetIndex(sheetname) == -1 {
 		f.NewSheet(sheetname)
 	}
 	err = f.SetSheetRow(sheetname, "A1", &HeadLine)
@@ -151,8 +151,8 @@ func SetHeadLine(path, sheetname string, HeadLine []interface{}) {
 		println(err.Error())
 	}
 	err = f.SetCellStyle(sheetname, "A1", DescribeLastPosition(len(HeadLine)), style)
-	//always set sheet 2 as active sheet , used to hidden "Sheet1" , "Sheet1" can not be delete for now.
-	f.SetActiveSheet(2)
+	//always set sheet 1 as active sheet , used to hidden "Sheet1" , "Sheet1" can not be delete for now.
+	f.SetActiveSheet(1)
 	err = f.SetSheetVisible("Sheet1", false)
 	if err != nil {
 		fmt.Println(err)
