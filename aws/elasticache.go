@@ -1,7 +1,7 @@
 /**
  * @Author: jie.an
  * @Description:
- * @File:  elasticcache.go
+ * @File:  elasticache.go
  * @Version: 1.0.0
  * @Date: 2020/1/22 17:29
  */
@@ -53,7 +53,7 @@ func ListECCs(se Session) (CacheList [][]interface{}) {
 			// todo cluster > 100
 			tools.WarningLogger.Println("Number Of Clusters > 100 , Data May Missing.")
 		}
-		cache = append(cache, se.AccountId, se.UsedRegion,*cachecluster.CacheClusterId, *cachecluster.NumCacheNodes, *cachecluster.CacheNodeType,
+		cache = append(cache, se.AccountId, se.UsedRegion, *cachecluster.CacheClusterId, *cachecluster.NumCacheNodes, *cachecluster.CacheNodeType,
 			*cachecluster.Engine, *cachecluster.EngineVersion, *cachecluster.CacheSubnetGroupName, *cachecluster.PreferredMaintenanceWindow,
 			*cachecluster.SnapshotRetentionLimit, sgs)
 		CacheList = append(CacheList, cache)

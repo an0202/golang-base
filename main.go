@@ -1,5 +1,10 @@
 package main
 
+import (
+	"fmt"
+	"golang-base/excel"
+)
+
 /*GCC
 export GOOS="windows"
 go build -o phoneix-windows.exe
@@ -16,7 +21,11 @@ func main() {
 	//var headerline = []interface{}{"GroupName", "VpcId", "GroupId", "Protocol", "Source", "FromPort", "ToPort"}
 	//sess := aws.InitSession("cn-north-1")
 	////a := aws.GetSGPolicys(sess)
-	cmd.SamsungBillFilter2()
+	//cmd.SamsungBillFilter2()
+	a := excel.ReadToMaps("IncidentReport_1589784098.xlsx", "Sheet1")
+	for _, v := range a {
+		fmt.Printf("%#v \n\n", v)
+	}
 }
 
 ////Functional Options

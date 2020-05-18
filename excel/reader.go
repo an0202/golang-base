@@ -35,47 +35,47 @@ import (
 //]
 //
 
-func ReadToMaps(excelfile, sheetname string) (rowmaps []map[string]string) {
+func ReadToMaps(excelFile, sheetName string) (rowMaps []map[string]string) {
 	// open file
-	tools.InfoLogger.Printf("Start Processing File: %s ,Sheet: %s", excelfile, sheetname)
-	f, err := excelize.OpenFile(excelfile)
+	tools.InfoLogger.Printf("Start Processing File: %s ,Sheet: %s", excelFile, sheetName)
+	f, err := excelize.OpenFile(excelFile)
 	if err != nil {
 		tools.ErrorLogger.Fatalln(err)
 	}
 	// headline type
 	headline := make(map[int]string)
-	tmprows, tmperr := f.Rows(sheetname)
-	if tmperr != nil {
-		tools.ErrorLogger.Fatalln(tmperr)
+	tmpRows, tmpErr := f.Rows(sheetName)
+	if tmpErr != nil {
+		tools.ErrorLogger.Fatalln(tmpErr)
 	}
-	headrow, headerr := tmprows.Columns()
-	if headerr != nil {
-		tools.ErrorLogger.Fatalln(headerr)
+	headRow, headErr := tmpRows.Columns()
+	if headErr != nil {
+		tools.ErrorLogger.Fatalln(headErr)
 	}
-	for k, v := range headrow {
+	for k, v := range headRow {
 		headline[k] = v
 	}
-	tools.InfoLogger.Println("HeadLine:",headline)
+	tools.InfoLogger.Println("HeadLine:", headline)
 	// iter all rows
-	//var rowmaps []map[string]string
-	rows, err := f.GetRows(sheetname)
+	//var rowMaps []map[string]string
+	rows, err := f.GetRows(sheetName)
 	if err != nil {
 		tools.ErrorLogger.Fatalln(err)
 	}
 	for _, row := range rows {
-		rowmap := make(map[string]string)
-		for k, v := range row {
+		rowMap := make(map[string]string)
+		for i, v := range row {
 			//skip head line (title)
-			if row[k] == headline[k] {
+			if row[i] == headline[i] {
 				continue
 			} else {
-				rowmap[headline[k]] = v
+				rowMap[headline[i]] = v
 			}
 		}
-		if len(rowmap) != 0 {
-			rowmaps = append(rowmaps, rowmap)
+		if len(rowMap) != 0 {
+			rowMaps = append(rowMaps, rowMap)
 		}
 	}
 	// return rowdata in map with out headeline (title)
-	return rowmaps
+	return rowMaps
 }
