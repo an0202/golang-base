@@ -12,15 +12,15 @@ import "golang-base/tools"
 
 //HeaderLine Last Position
 var LastPosition = map[int]string{
-	1: "A1",
-	2: "B1",
-	3: "C1",
-	4: "D1",
-	5: "E1",
-	6: "F1",
-	7: "G1",
-	8: "H1",
-	9: "I1",
+	1:  "A1",
+	2:  "B1",
+	3:  "C1",
+	4:  "D1",
+	5:  "E1",
+	6:  "F1",
+	7:  "G1",
+	8:  "H1",
+	9:  "I1",
 	10: "J1",
 	11: "K1",
 	12: "L1",
@@ -39,6 +39,14 @@ var LastPosition = map[int]string{
 	25: "Y1",
 	26: "Z1",
 	27: "AA1",
+	28: "AB1",
+	29: "AC1",
+	30: "AD1",
+	31: "AE1",
+	32: "AF1",
+	33: "AG1",
+	34: "AH1",
+	35: "AI1",
 }
 
 // DescribeLastPosition return last position for headline
