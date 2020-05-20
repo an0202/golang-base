@@ -37,7 +37,7 @@ func SetStructRows(path, sheetname string, rows []interface{}) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	if f.GetSheetIndex(sheetname) == 0 {
+	if f.GetSheetIndex(sheetname) == -1 {
 		f.NewSheet(sheetname)
 	}
 	for index, row := range rows {
@@ -65,7 +65,7 @@ func SetStructRowsV2(path, sheetname, startColumn string, startRow int, rows []i
 	if err != nil {
 		fmt.Println(err)
 	}
-	if f.GetSheetIndex(sheetname) == 0 {
+	if f.GetSheetIndex(sheetname) == -1 {
 		f.NewSheet(sheetname)
 	}
 	for index, row := range rows {
@@ -93,7 +93,7 @@ func SetListRows(path, sheetname string, rows [][]interface{}) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	if f.GetSheetIndex(sheetname) == 0 {
+	if f.GetSheetIndex(sheetname) == -1 {
 		f.NewSheet(sheetname)
 	}
 	for index, rowList := range rows {
@@ -114,7 +114,7 @@ func SetListRowsV2(path, sheetname, startColumn string, startRow int, rows [][]i
 	if err != nil {
 		fmt.Println(err)
 	}
-	if f.GetSheetIndex(sheetname) == 0 {
+	if f.GetSheetIndex(sheetname) == -1 {
 		f.NewSheet(sheetname)
 	}
 	for index, rowList := range rows {
