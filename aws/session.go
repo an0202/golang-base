@@ -1,6 +1,7 @@
 package aws
 
 import (
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"golang-base/tools"
 	"os"
 
@@ -12,20 +13,36 @@ import (
 )
 
 type Session struct {
-	UsedRegion        string
-	UsedAwsProfile 	  string
-	AccountId		  string
-	Sess *session.Session
+	UsedRegion     string
+	UsedAwsProfile string
+	AccountId      string
+	Sess           *session.Session
+}
+
+func InitSessionWithAKSK(ak, sk, region string) *session.Session {
+	// Init a credentials
+	cres := credentials.NewStaticCredentials(ak, sk, "")
+	// Init a session
+	sess, err := session.NewSession(&aws.Config{
+		Region:      aws.String(region),
+		Credentials: cres,
+	},
+	)
+	if err != nil {
+		tools.ErrorLogger.Fatalln(err)
+	}
+	GetAccountId(sess)
+	return sess
 }
 
 func (se *Session) InitSessionWithAWSProfile(region, awsProfile string) *Session {
 	//Set AWS_SDK_LOAD_CONFIG="true"
 	os.Setenv("AWS_SDK_LOAD_CONFIG", "1")
 	if awsProfile == "" {
-		tools.WarningLogger.Println("Config's AWS_PROFILE Is null , Use Previous AWS_PROFILE Or"+
+		tools.WarningLogger.Println("Config's AWS_PROFILE Is null , Use Previous AWS_PROFILE Or" +
 			" Create Credential From OS Environment.")
 	} else {
-		tools.InfoLogger.Printf("Create Credential By : %s, Region: %s\n",awsProfile,region)
+		tools.InfoLogger.Printf("Create Credential By : %s, Region: %s\n", awsProfile, region)
 		os.Setenv("AWS_PROFILE", awsProfile)
 	}
 	// Init a session
@@ -43,7 +60,6 @@ func (se *Session) InitSessionWithAWSProfile(region, awsProfile string) *Session
 }
 
 // compatible with old code
-
 func InitSession(region string) *session.Session {
 	//Set AWS_SDK_LOAD_CONFIG="true"
 	os.Setenv("AWS_SDK_LOAD_CONFIG", "1")

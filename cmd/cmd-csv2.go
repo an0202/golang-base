@@ -49,7 +49,7 @@ func SamsungBillFilter2() {
 	// init csv reader
 	reader := csv.NewReader(inputCSV)
 	// out put message to output.csv
-	outputCSV, outputError := os.OpenFile("output.csv", os.O_WRONLY|os.O_CREATE, 0666)
+	outputCSV, outputError := os.OpenFile(*inputFile+"-Export.csv", os.O_WRONLY|os.O_CREATE, 0666)
 	if outputError != nil {
 		tools.ErrorLogger.Fatalln(outputError)
 		return
@@ -96,12 +96,12 @@ func SamsungBillFilter2() {
 		}
 		lineCount++
 	}
-	// mspBill filter
-	for k, v := range ms.MSPBillings {
-		fmt.Println(k, v)
-	}
 	// flush to file
 	writer.Flush()
+	// mspBill filter
+	for _, v := range ms.MSPBillings {
+		fmt.Println(v.LinkedAccountId, v.ResourceId, v.UsageType, v.UserTag1, v.UserTag2, v.RunningDays)
+	}
 	// End task
 	tools.InfoLogger.Println("Task Done")
 }

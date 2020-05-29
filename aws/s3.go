@@ -12,7 +12,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"golang-base/tools"
 	"os"
-	"path"
+	"path/filepath"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -21,15 +22,15 @@ import (
 )
 
 type Bucket struct {
-	AccountId 			string
-	Region   			string
-	Name 	 			string
-	ACL      			[]interface{}
-	Policy   			string
-	CORS      			[]interface{}
-	LifeCycle   	    []interface{}
-	Versioning			string
-	Website				interface{}
+	AccountId  string
+	Region     string
+	Name       string
+	ACL        []interface{}
+	Policy     string
+	CORS       []interface{}
+	LifeCycle  []interface{}
+	Versioning string
+	Website    interface{}
 }
 
 //List S3Bucket
@@ -37,8 +38,7 @@ func Listv2S3(se Session) (S3List []interface{}) {
 	// Create an s3 service client.
 	svc := s3.New(se.Sess)
 	// Get sns topics
-	output, err := svc.ListBuckets(&s3.ListBucketsInput{
-	})
+	output, err := svc.ListBuckets(&s3.ListBucketsInput{})
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
@@ -56,10 +56,10 @@ func Listv2S3(se Session) (S3List []interface{}) {
 		BK := new(Bucket)
 		BK.AccountId = se.AccountId
 		BK.Name = *bucket.Name
-        BK.Region = BK.GetBucketLocation(se, BK.Name)
-        //permission
-        BK.ACL = BK.GetBucketACLs(se, BK.Name)
-        BK.Policy = BK.GetBucketPolicy(se, BK.Name)
+		BK.Region = BK.GetBucketLocation(se, BK.Name)
+		//permission
+		BK.ACL = BK.GetBucketACLs(se, BK.Name)
+		BK.Policy = BK.GetBucketPolicy(se, BK.Name)
 		BK.CORS = BK.GetCORSRules(se, BK.Name)
 		//property
 		BK.Versioning = BK.GetBucketVersioning(se, BK.Name)
@@ -71,7 +71,7 @@ func Listv2S3(se Session) (S3List []interface{}) {
 	return S3List
 }
 
-func (bk *Bucket) GetBucketLocation(se Session,BucketName string) string {
+func (bk *Bucket) GetBucketLocation(se Session, BucketName string) string {
 	// Create an s3 service client.
 	svc := s3.New(se.Sess)
 	// Get bucket location
@@ -94,7 +94,7 @@ func (bk *Bucket) GetBucketLocation(se Session,BucketName string) string {
 	return *output.LocationConstraint
 }
 
-func (bk *Bucket) GetBucketVersioning(se Session,BucketName string) string {
+func (bk *Bucket) GetBucketVersioning(se Session, BucketName string) string {
 	// Create an s3 service client.
 	svc := s3.New(se.Sess)
 	// Get bucket location
@@ -105,7 +105,7 @@ func (bk *Bucket) GetBucketVersioning(se Session,BucketName string) string {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			default:
-				tools.ErrorLogger.Println(BucketName,aerr.Error())
+				tools.ErrorLogger.Println(BucketName, aerr.Error())
 			}
 		} else {
 			// Print the error, cast err to awserr.Error to get the Code and
@@ -120,7 +120,7 @@ func (bk *Bucket) GetBucketVersioning(se Session,BucketName string) string {
 	return *output.Status
 }
 
-func (bk *Bucket) GetBucketWebSite(se Session,BucketName string) interface{} {
+func (bk *Bucket) GetBucketWebSite(se Session, BucketName string) interface{} {
 	// Create an s3 service client.
 	svc := s3.New(se.Sess)
 	// Get bucket location
@@ -131,7 +131,7 @@ func (bk *Bucket) GetBucketWebSite(se Session,BucketName string) interface{} {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			default:
-				tools.WarningLogger.Println(BucketName,aerr.Error())
+				tools.WarningLogger.Println(BucketName, aerr.Error())
 			}
 		} else {
 			// Print the error, cast err to awserr.Error to get the Code and
@@ -143,7 +143,7 @@ func (bk *Bucket) GetBucketWebSite(se Session,BucketName string) interface{} {
 	return *output
 }
 
-func (bk *Bucket) GetBucketPolicy(se Session,BucketName string) string {
+func (bk *Bucket) GetBucketPolicy(se Session, BucketName string) string {
 	// Create an s3 service client.
 	svc := s3.New(se.Sess)
 	// Get bucket location
@@ -154,7 +154,7 @@ func (bk *Bucket) GetBucketPolicy(se Session,BucketName string) string {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			default:
-				tools.WarningLogger.Println(BucketName,aerr.Error())
+				tools.WarningLogger.Println(BucketName, aerr.Error())
 			}
 		} else {
 			// Print the error, cast err to awserr.Error to get the Code and
@@ -166,7 +166,7 @@ func (bk *Bucket) GetBucketPolicy(se Session,BucketName string) string {
 	return *output.Policy
 }
 
-func (bk *Bucket) GetBucketACLs(se Session,BucketName string) (GrantList []interface{}) {
+func (bk *Bucket) GetBucketACLs(se Session, BucketName string) (GrantList []interface{}) {
 	// Create an s3 service client.
 	svc := s3.New(se.Sess)
 	// Get bucket location
@@ -177,18 +177,18 @@ func (bk *Bucket) GetBucketACLs(se Session,BucketName string) (GrantList []inter
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			default:
-				tools.ErrorLogger.Println(BucketName,aerr.Error())
+				tools.ErrorLogger.Println(BucketName, aerr.Error())
 			}
 		} else {
 			// Print the error, cast err to awserr.Error to get the Code and
 			// Message from an error.
 			tools.ErrorLogger.Println(err.Error())
 		}
-		GrantList = append(GrantList,"N/A")
+		GrantList = append(GrantList, "N/A")
 		return GrantList
 	}
 	if len(output.Grants) == 0 {
-		GrantList = append(GrantList,"N/A")
+		GrantList = append(GrantList, "N/A")
 	} else {
 		for _, grant := range output.Grants {
 			GrantList = append(GrantList, *grant)
@@ -197,7 +197,7 @@ func (bk *Bucket) GetBucketACLs(se Session,BucketName string) (GrantList []inter
 	return GrantList
 }
 
-func (bk *Bucket) GetCORSRules(se Session,BucketName string) (RuleList []interface{}) {
+func (bk *Bucket) GetCORSRules(se Session, BucketName string) (RuleList []interface{}) {
 	// Create an s3 service client.
 	svc := s3.New(se.Sess)
 	// Get bucket location
@@ -208,18 +208,18 @@ func (bk *Bucket) GetCORSRules(se Session,BucketName string) (RuleList []interfa
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			default:
-				tools.WarningLogger.Println(BucketName,aerr.Error())
+				tools.WarningLogger.Println(BucketName, aerr.Error())
 			}
 		} else {
 			// Print the error, cast err to awserr.Error to get the Code and
 			// Message from an error.
 			tools.ErrorLogger.Println(err.Error())
 		}
-		RuleList = append(RuleList,"N/A")
+		RuleList = append(RuleList, "N/A")
 		return RuleList
 	}
 	if len(output.CORSRules) == 0 {
-		RuleList = append(RuleList,"N/A")
+		RuleList = append(RuleList, "N/A")
 	} else {
 		for _, corsRule := range output.CORSRules {
 			RuleList = append(RuleList, *corsRule)
@@ -228,7 +228,7 @@ func (bk *Bucket) GetCORSRules(se Session,BucketName string) (RuleList []interfa
 	return RuleList
 }
 
-func (bk *Bucket) GetLifeCycleRules(se Session,BucketName string) (RuleList []interface{}) {
+func (bk *Bucket) GetLifeCycleRules(se Session, BucketName string) (RuleList []interface{}) {
 	// Create an s3 service client.
 	svc := s3.New(se.Sess)
 	// Get bucket location
@@ -239,18 +239,18 @@ func (bk *Bucket) GetLifeCycleRules(se Session,BucketName string) (RuleList []in
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			default:
-				tools.WarningLogger.Println(BucketName,aerr.Error())
+				tools.WarningLogger.Println(BucketName, aerr.Error())
 			}
 		} else {
 			// Print the error, cast err to awserr.Error to get the Code and
 			// Message from an error.
 			tools.ErrorLogger.Println(err.Error())
 		}
-		RuleList = append(RuleList,"N/A")
+		RuleList = append(RuleList, "N/A")
 		return RuleList
 	}
 	if len(output.Rules) == 0 {
-		RuleList = append(RuleList,"N/A")
+		RuleList = append(RuleList, "N/A")
 	} else {
 		for _, lifecyleRule := range output.Rules {
 			RuleList = append(RuleList, *lifecyleRule)
@@ -259,18 +259,49 @@ func (bk *Bucket) GetLifeCycleRules(se Session,BucketName string) (RuleList []in
 	return RuleList
 }
 
-
+// Head S3 Object
+func headS3Object(sess *session.Session, bucket string, item string) {
+	svc := s3.New(sess)
+	output, err := svc.HeadObject(&s3.HeadObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(item),
+	})
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				tools.WarningLogger.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			tools.ErrorLogger.Println(err.Error())
+		}
+	}
+	tools.InfoLogger.Println("Object Size:", *output.ContentLength, "bytes.")
+}
 
 // S3Download Used Download Content From S3
-func S3Download(sess *session.Session, bucket string, item string) {
+func S3Download(sess *session.Session, bucket string, item string, dest string) {
+	headS3Object(sess, bucket, item)
+	tools.InfoLogger.Println("Downloading File:", bucket+item)
+	// Store filename/path for returning and using later on
+	fPath := filepath.Join(dest, item)
+
+	if !strings.HasPrefix(fPath, filepath.Clean(dest)+string(os.PathSeparator)) {
+		tools.ErrorLogger.Fatalf("%s: illegal file path", fPath)
+	}
+	// create directory
+	if err := os.MkdirAll(filepath.Dir(fPath), os.ModePerm); err != nil {
+		tools.ErrorLogger.Fatalf(err.Error())
+	}
 	//Create local file
-	file, err := os.Create(path.Base(item))
+	file, err := os.Create(fPath)
 	if err != nil {
 		fmt.Println(err)
 	}
 	defer file.Close()
 	downloader := s3manager.NewDownloader(sess)
-
 	numBytes, err := downloader.Download(file,
 		&s3.GetObjectInput{
 			Bucket: aws.String(bucket),
@@ -279,5 +310,5 @@ func S3Download(sess *session.Session, bucket string, item string) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println("Downloaded", file.Name(), numBytes, "bytes")
+	tools.InfoLogger.Println("Downloaded", file.Name(), numBytes, "bytes.")
 }
