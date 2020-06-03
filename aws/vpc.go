@@ -143,7 +143,7 @@ func Listv2SGs(se Session) (PolicyList []interface{}) {
 }
 
 //List EIPs
-func ListEIPs(se Session) (EIPList[][]interface{}) {
+func ListEIPs(se Session) (EIPList [][]interface{}) {
 	// Create an EC2 service client.
 	svc := ec2.New(se.Sess)
 	// get eips
@@ -167,20 +167,20 @@ func ListEIPs(se Session) (EIPList[][]interface{}) {
 		if len(name) == 0 {
 			name = "N/A "
 		}
-		EIP = append(EIP,se.AccountId,se.UsedRegion,name,*eip.PublicIp)
+		EIP = append(EIP, se.AccountId, se.UsedRegion, name, *eip.PublicIp)
 		EIPList = append(EIPList, EIP)
 	}
 	return EIPList
 }
 
 //List SubNets
-func ListSubNets(se Session) (SubNetList[][]interface{}) {
+func ListSubNets(se Session) (SubNetList [][]interface{}) {
 	// Create an EC2 service client.
 	svc := ec2.New(se.Sess)
 	// get eips
 	output, err := svc.DescribeSubnets(&ec2.DescribeSubnetsInput{
 		MaxResults: aws.Int64(100),
-		DryRun: aws.Bool(false),
+		DryRun:     aws.Bool(false),
 	})
 	if err != nil {
 		tools.WarningLogger.Println(err)
@@ -202,7 +202,7 @@ func ListSubNets(se Session) (SubNetList[][]interface{}) {
 		if len(output.Subnets) == 100 {
 			tools.WarningLogger.Println("Subnet Number > 100 , Data May Loss")
 		}
-		SubNet = append(SubNet,*subnet.OwnerId,se.UsedRegion,name,*subnet.SubnetId,*subnet.VpcId,*subnet.CidrBlock,
+		SubNet = append(SubNet, *subnet.OwnerId, se.UsedRegion, name, *subnet.SubnetId, *subnet.VpcId, *subnet.CidrBlock,
 			*subnet.AvailabilityZone, *subnet.DefaultForAz)
 		SubNetList = append(SubNetList, SubNet)
 	}
@@ -210,13 +210,13 @@ func ListSubNets(se Session) (SubNetList[][]interface{}) {
 }
 
 //List RouteTables
-func ListRouteTables(se Session) (RouteTableList[][]interface{}) {
+func ListRouteTables(se Session) (RouteTableList [][]interface{}) {
 	// Create an EC2 service client.
 	svc := ec2.New(se.Sess)
 	// get routetables
 	output, err := svc.DescribeRouteTables(&ec2.DescribeRouteTablesInput{
 		MaxResults: aws.Int64(100),
-		DryRun: aws.Bool(false),
+		DryRun:     aws.Bool(false),
 	})
 	if err != nil {
 		tools.WarningLogger.Println(err)
@@ -235,45 +235,45 @@ func ListRouteTables(se Session) (RouteTableList[][]interface{}) {
 			name = "N/A "
 		}
 		//handle route and assosication
-		var routes,assosications []interface{}
+		var routes, assosications []interface{}
 		if len(routeTable.Routes) == 0 {
-			routes = append(routes,"N/A")
+			routes = append(routes, "N/A")
 		} else {
 			for _, route := range routeTable.Routes {
-				routes = append(routes, *route," ")
+				routes = append(routes, *route, " ")
 			}
 		}
 		if len(routeTable.Associations) == 0 {
-			assosications = append(assosications,"N/A")
+			assosications = append(assosications, "N/A")
 		} else {
 			for _, assosication := range routeTable.Associations {
-				assosications = append(assosications, *assosication," ")
+				assosications = append(assosications, *assosication, " ")
 			}
 		}
 		if len(output.RouteTables) == 100 {
 			tools.WarningLogger.Println("Subnet Number > 100 , Data May Loss")
 		}
-		RouteTable = append(RouteTable,*routeTable.OwnerId,se.UsedRegion,name,*routeTable.RouteTableId,*routeTable.VpcId,
-		assosications,routes)
+		RouteTable = append(RouteTable, *routeTable.OwnerId, se.UsedRegion, name, *routeTable.RouteTableId, *routeTable.VpcId,
+			assosications, routes)
 		RouteTableList = append(RouteTableList, RouteTable)
 	}
 	return RouteTableList
 }
 
 //List VpcPeering
-func ListVPCPeering(se Session) (PeeringConnectionList[][]interface{}) {
+func ListVPCPeering(se Session) (PeeringConnectionList [][]interface{}) {
 	// Create an EC2 service client.
 	svc := ec2.New(se.Sess)
 	// get VpcPeering
 	output, err := svc.DescribeVpcPeeringConnections(&ec2.DescribeVpcPeeringConnectionsInput{
 		MaxResults: aws.Int64(100),
-		DryRun: aws.Bool(false),
+		DryRun:     aws.Bool(false),
 	})
 	if err != nil {
 		tools.WarningLogger.Println(err)
 		return
 	}
-	for _, vpcPerring := range output.VpcPeeringConnections{
+	for _, vpcPerring := range output.VpcPeeringConnections {
 		var PeeringConnection []interface{}
 		var name string
 		//get name tag
@@ -288,7 +288,7 @@ func ListVPCPeering(se Session) (PeeringConnectionList[][]interface{}) {
 		if len(output.VpcPeeringConnections) == 100 {
 			tools.WarningLogger.Println("VpcPeeringConnections Number > 100 , Data May Loss")
 		}
-		PeeringConnection = append(PeeringConnection,se.AccountId,se.UsedRegion, name,*vpcPerring.VpcPeeringConnectionId,
+		PeeringConnection = append(PeeringConnection, se.AccountId, se.UsedRegion, name, *vpcPerring.VpcPeeringConnectionId,
 			*vpcPerring.RequesterVpcInfo, *vpcPerring.AccepterVpcInfo)
 		PeeringConnectionList = append(PeeringConnectionList, PeeringConnection)
 	}
@@ -296,7 +296,7 @@ func ListVPCPeering(se Session) (PeeringConnectionList[][]interface{}) {
 }
 
 //List NatGateway
-func ListNatGateway(se Session) (NatGatewayList[][]interface{}) {
+func ListNatGateway(se Session) (NatGatewayList [][]interface{}) {
 	// Create an EC2 service client.
 	svc := ec2.New(se.Sess)
 	// get nat gateway
@@ -307,7 +307,7 @@ func ListNatGateway(se Session) (NatGatewayList[][]interface{}) {
 		tools.WarningLogger.Println(err)
 		return
 	}
-	for _, natGateway := range output.NatGateways{
+	for _, natGateway := range output.NatGateways {
 		var NatGateway []interface{}
 		var name string
 		//get name tag
@@ -322,10 +322,9 @@ func ListNatGateway(se Session) (NatGatewayList[][]interface{}) {
 		if len(output.NatGateways) == 100 {
 			tools.WarningLogger.Println("NatGateways Number > 100 , Data May Loss")
 		}
-		NatGateway = append(NatGateway,se.AccountId,se.UsedRegion, name,*natGateway.NatGatewayId,*natGateway.VpcId,
+		NatGateway = append(NatGateway, se.AccountId, se.UsedRegion, name, *natGateway.NatGatewayId, *natGateway.VpcId,
 			*natGateway.SubnetId)
 		NatGatewayList = append(NatGatewayList, NatGateway)
 	}
 	return NatGatewayList
 }
-

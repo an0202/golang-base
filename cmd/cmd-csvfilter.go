@@ -19,7 +19,7 @@ import (
 
 func initCsvFilter() {
 	inputFile = flag.String("file", "beijing.csv", "Source File To Be Processed")
-	column = flag.Int("col", 0 , "Column To Be Processed")
+	column = flag.Int("col", 0, "Column To Be Processed")
 	include = flag.String("inc", "405718244235,0123456789", "Linked Account IDs Split With \",\"")
 	help = flag.Bool("h", false, "Print This Message")
 }

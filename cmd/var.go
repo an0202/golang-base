@@ -9,8 +9,8 @@ package cmd
 
 // General
 var (
-	region *string
-	help   *bool
+	region  *string
+	help    *bool
 	overide *bool
 )
 
@@ -19,7 +19,7 @@ var (
 	excelFile *string
 	sheetName *string
 	method    *string
-	tags 	  *string
+	tags      *string
 )
 
 //ec2 ami
@@ -42,5 +42,3 @@ var (
 	column     *int
 	include    *string
 )
-
-

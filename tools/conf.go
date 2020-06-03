@@ -20,10 +20,10 @@ type YamlConf interface {
 type HttpHeaderConf struct {
 	//Host   string `yaml:"host"`
 	Authorization string `yaml:"authorization"`
-	Cookie	string `yaml:"cookie"`
+	Cookie        string `yaml:"cookie"`
 }
 
-func (c *HttpHeaderConf) GetConf(path string) *HttpHeaderConf{
+func (c *HttpHeaderConf) GetConf(path string) *HttpHeaderConf {
 	yamlFile, err := ioutil.ReadFile(path)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -34,5 +34,3 @@ func (c *HttpHeaderConf) GetConf(path string) *HttpHeaderConf{
 	}
 	return c
 }
-
-

@@ -46,9 +46,9 @@ func EC2() {
 	case "get":
 		excel.CreateFile("output.xlsx")
 		var headerLine = []interface{}{"AccountId", "Region", "Name", "InstanceId", "InstanceType", "Platform", "State",
-			"VPCId","Role","SubnetId","KeyPair","SecurityGroups","PrivateIP","PublicIP","Tags"}
+			"VPCId", "Role", "SubnetId", "KeyPair", "SecurityGroups", "PrivateIP", "PublicIP", "Tags"}
 		// Total sheet , rowsNum is position for Total sheet written data
-		excel.SetHeadLine("output.xlsx","Total", headerLine)
+		excel.SetHeadLine("output.xlsx", "Total", headerLine)
 		rowsNum := 1
 		// Get EC2 Instances From Excel (Excel Contains AWS_PROFILE And Region)
 		if *excelFile != "" {
@@ -58,19 +58,19 @@ func EC2() {
 				//fmt.Println("RowsNumis:      ",rowsNum)
 				b := aws.EC2InstanceMarshal(v)
 				// create a new session
-				se.InitSessionWithAWSProfile(b.Region,b.AWSProfile)
+				se.InitSessionWithAWSProfile(b.Region, b.AWSProfile)
 				// fmt.Println(se.Sess.Config.Credentials)
 				instances := aws.ListInstances(*se)
-				var outputSheetName = b.AWSProfile+"-"+b.Region
+				var outputSheetName = b.AWSProfile + "-" + b.Region
 				if len(instances) != 0 {
-					tools.InfoLogger.Printf("Found %d Instances In %s : %s \n", len(instances), b.AWSProfile,b.Region)
-					excel.SetHeadLine("output.xlsx",outputSheetName, headerLine)
+					tools.InfoLogger.Printf("Found %d Instances In %s : %s \n", len(instances), b.AWSProfile, b.Region)
+					excel.SetHeadLine("output.xlsx", outputSheetName, headerLine)
 					excel.SetListRows("output.xlsx", outputSheetName, instances)
 					// Write summary data to Total sheet
-					excel.SetListRowsV2("output.xlsx","Total","A",rowsNum+1,instances)
+					excel.SetListRowsV2("output.xlsx", "Total", "A", rowsNum+1, instances)
 					rowsNum += len(instances)
 				} else {
-					tools.InfoLogger.Printf("No EC2 Instnace In %s : %s \n", b.AWSProfile,b.Region)
+					tools.InfoLogger.Printf("No EC2 Instnace In %s : %s \n", b.AWSProfile, b.Region)
 				}
 			}
 		} else {

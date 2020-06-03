@@ -23,7 +23,7 @@ import (
 type EC2InstanceDetail struct {
 	InstanceId          string
 	Region              string
-	AWSProfile			string
+	AWSProfile          string
 	Tags                map[string]string
 	BlockDeviceMappings []EBSDetail
 }
@@ -114,7 +114,7 @@ func EC2InstanceMarshal(ec2instancedetail map[string]string) (instance EC2Instan
 // GetTags return ec2 tags information
 // allTags : current tags for ec2
 // queryResult : instanceId and the returned value of the queried tag key in list
-func EC2GetTags(sess *session.Session, resource EC2InstanceDetail, queryKeys string) (allTags map[string]string,queryResult []interface{}){
+func EC2GetTags(sess *session.Session, resource EC2InstanceDetail, queryKeys string) (allTags map[string]string, queryResult []interface{}) {
 	// Create an EC2 service client.
 	svc := ec2.New(sess)
 
@@ -141,15 +141,15 @@ func EC2GetTags(sess *session.Session, resource EC2InstanceDetail, queryKeys str
 		//fmt.Println("Cur ec2 tag key list:", allTags)
 	}
 	// queryResult with instanceid and value of the queried tag key
-	queryResult = append(queryResult,resource.InstanceId)
-	for _ , queryKey := range strings.Split(queryKeys, ",") {
-		if _,ok := allTags[queryKey] ; ok {
+	queryResult = append(queryResult, resource.InstanceId)
+	for _, queryKey := range strings.Split(queryKeys, ",") {
+		if _, ok := allTags[queryKey]; ok {
 			queryResult = append(queryResult, allTags[queryKey])
 		} else {
 			queryResult = append(queryResult, "N/A")
 		}
 	}
-	tools.InfoLogger.Printf("Query Result For Resource %s : %s \n", resource.InstanceId,queryResult)
+	tools.InfoLogger.Printf("Query Result For Resource %s : %s \n", resource.InstanceId, queryResult)
 	return allTags, queryResult
 }
 
@@ -214,7 +214,7 @@ func EC2CreateTags(sess *session.Session, instance EC2InstanceDetail, override b
 			exist := tools.StringFind(curTagsKeyList, preTagKey)
 			switch exist {
 			case true:
-				tools.InfoLogger.Printf("Find %s In Current EC2 Tag List , Skip \n",preTagKey)
+				tools.InfoLogger.Printf("Find %s In Current EC2 Tag List , Skip \n", preTagKey)
 			case false:
 				curTags.Tags = append(curTags.Tags, &ec2.TagDescription{
 					Key:   aws.String(preTagKey),
@@ -229,7 +229,7 @@ func EC2CreateTags(sess *session.Session, instance EC2InstanceDetail, override b
 			})
 		}
 	}
-	tools.InfoLogger.Printf("Create Tags For Resource %s Tag %s : \n",resourceIDs,tags)
+	tools.InfoLogger.Printf("Create Tags For Resource %s Tag %s : \n", resourceIDs, tags)
 	//Create tag
 	_, err = svc.CreateTags(&ec2.CreateTagsInput{
 		DryRun:    aws.Bool(false),
@@ -357,7 +357,7 @@ func EC2DeleteTags(sess *session.Session, instance EC2InstanceDetail) {
 }
 
 //List KeysPairs
-func ListKeyPairs(se Session) (KeyPairList[][]interface{}) {
+func ListKeyPairs(se Session) (KeyPairList [][]interface{}) {
 	// Create an EC2 service client.
 	svc := ec2.New(se.Sess)
 	// Get instance tag name
@@ -370,7 +370,7 @@ func ListKeyPairs(se Session) (KeyPairList[][]interface{}) {
 	}
 	for _, keypair := range output.KeyPairs {
 		var keyPair []interface{}
-		keyPair = append(keyPair,se.AccountId,se.UsedRegion,*keypair.KeyName,*keypair.KeyFingerprint)
+		keyPair = append(keyPair, se.AccountId, se.UsedRegion, *keypair.KeyName, *keypair.KeyFingerprint)
 		KeyPairList = append(KeyPairList, keyPair)
 	}
 	return KeyPairList
@@ -403,15 +403,15 @@ func ListSnapshots(se Session) (SnapshotList [][]interface{}) {
 }
 
 //List snapshot Internal
-func listSnapshots(se Session, token string,maxResults int) (SnapshotList [][]interface{},nextToken string) {
+func listSnapshots(se Session, token string, maxResults int) (SnapshotList [][]interface{}, nextToken string) {
 	// Create an EC2 service client.
 	svc := ec2.New(se.Sess)
 	// Get snapshots
 	output, err := svc.DescribeSnapshots(&ec2.DescribeSnapshotsInput{
-		DryRun: aws.Bool(false),
+		DryRun:     aws.Bool(false),
 		MaxResults: aws.Int64(int64(maxResults)),
-		NextToken: aws.String(token),
-		OwnerIds: []*string{aws.String(se.AccountId)},
+		NextToken:  aws.String(token),
+		OwnerIds:   []*string{aws.String(se.AccountId)},
 	})
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
@@ -428,8 +428,8 @@ func listSnapshots(se Session, token string,maxResults int) (SnapshotList [][]in
 	}
 	for _, snapshot := range output.Snapshots {
 		var Snapshot []interface{}
-		Snapshot = append(Snapshot,*snapshot.OwnerId,se.UsedRegion,*snapshot.SnapshotId,*snapshot.VolumeId,
-			*snapshot.Description,*snapshot.State)
+		Snapshot = append(Snapshot, *snapshot.OwnerId, se.UsedRegion, *snapshot.SnapshotId, *snapshot.VolumeId,
+			*snapshot.Description, *snapshot.State)
 		SnapshotList = append(SnapshotList, Snapshot)
 	}
 	if output.NextToken == nil {
@@ -441,7 +441,7 @@ func listSnapshots(se Session, token string,maxResults int) (SnapshotList [][]in
 }
 
 //List AMI
-func ListAMIs(se Session) (AMIList[][]interface{}) {
+func ListAMIs(se Session) (AMIList [][]interface{}) {
 	// Create an EC2 service client.
 	svc := ec2.New(se.Sess)
 	// Get instance tag name
@@ -455,7 +455,7 @@ func ListAMIs(se Session) (AMIList[][]interface{}) {
 	}
 	for _, image := range output.Images {
 		var Image []interface{}
-		Image = append(Image,*image.OwnerId,se.UsedRegion,*image.ImageId,*image.Name,*image.State)
+		Image = append(Image, *image.OwnerId, se.UsedRegion, *image.ImageId, *image.Name, *image.State)
 		AMIList = append(AMIList, Image)
 	}
 	return AMIList
@@ -489,14 +489,14 @@ func ListVolumes(se Session) (VolumeList [][]interface{}) {
 }
 
 //List Volumes Internal
-func listVolumes(se Session, token string,maxResults int) (VolumeList [][]interface{},nextToken string) {
+func listVolumes(se Session, token string, maxResults int) (VolumeList [][]interface{}, nextToken string) {
 	// Create an EC2 service client.
 	svc := ec2.New(se.Sess)
 	// Get volumes
 	output, err := svc.DescribeVolumes(&ec2.DescribeVolumesInput{
-		DryRun: aws.Bool(false),
+		DryRun:     aws.Bool(false),
 		MaxResults: aws.Int64(int64(maxResults)),
-		NextToken: aws.String(token),
+		NextToken:  aws.String(token),
 	})
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
@@ -513,7 +513,7 @@ func listVolumes(se Session, token string,maxResults int) (VolumeList [][]interf
 	}
 	for _, volume := range output.Volumes {
 		var Volume []interface{}
-		var name , attachedInstance string
+		var name, attachedInstance string
 		var tags []string
 		//handle tags
 		if len(volume.Tags) == 0 {
@@ -533,12 +533,12 @@ func listVolumes(se Session, token string,maxResults int) (VolumeList [][]interf
 		if len(volume.Attachments) == 0 {
 			attachedInstance = "N/A"
 		} else {
-			for _ ,attach := range volume.Attachments {
+			for _, attach := range volume.Attachments {
 				attachedInstance = *attach.InstanceId
 			}
 		}
-		Volume = append(Volume,se.AccountId,se.UsedRegion,name ,*volume.VolumeId,attachedInstance,*volume.State, *volume.VolumeType,
-			*volume.Size,*volume.AvailabilityZone)
+		Volume = append(Volume, se.AccountId, se.UsedRegion, name, *volume.VolumeId, attachedInstance, *volume.State, *volume.VolumeType,
+			*volume.Size, *volume.AvailabilityZone)
 		VolumeList = append(VolumeList, Volume)
 	}
 	if output.NextToken == nil {
@@ -572,7 +572,7 @@ func ListInstances(se Session) (InstanceList [][]interface{}) {
 	for _, reservation := range output.Reservations {
 		for _, instance := range reservation.Instances {
 			var Instance []interface{}
-			var platform, rolearn, instancename ,keypair, publicip string
+			var platform, rolearn, instancename, keypair, publicip string
 			if instance.Platform != nil {
 				platform = *instance.Platform
 			} else {
@@ -588,7 +588,7 @@ func ListInstances(se Session) (InstanceList [][]interface{}) {
 			} else {
 				keypair = *instance.KeyName
 			}
-			if instance.PublicIpAddress == nil{
+			if instance.PublicIpAddress == nil {
 				publicip = "N/A"
 			} else {
 				publicip = *instance.PublicIpAddress
@@ -616,9 +616,9 @@ func ListInstances(se Session) (InstanceList [][]interface{}) {
 					instancename = "N/A "
 				}
 			}
-			Instance = append(Instance, se.AccountId,se.UsedRegion,instancename, *instance.InstanceId,
+			Instance = append(Instance, se.AccountId, se.UsedRegion, instancename, *instance.InstanceId,
 				*instance.InstanceType, platform, *instance.State.Name, *instance.VpcId,
-				rolearn, *instance.SubnetId, *instance.PrivateIpAddress, publicip,keypair, sgs, tags)
+				rolearn, *instance.SubnetId, *instance.PrivateIpAddress, publicip, keypair, sgs, tags)
 			//fmt.Println(Instance)
 			InstanceList = append(InstanceList, Instance)
 		}

@@ -15,12 +15,12 @@ import (
 )
 
 type Topic struct {
-	AccountId string
-	Region    string
-	Name 	  string
-	Policy    string
-	ARN       string
-	Subscription  map[string]string
+	AccountId    string
+	Region       string
+	Name         string
+	Policy       string
+	ARN          string
+	Subscription map[string]string
 }
 
 //List SNS
@@ -28,8 +28,7 @@ func Listv2SNS(se Session) (SNSList []interface{}) {
 	// Create an sns service client.
 	svc := sns.New(se.Sess)
 	// Get sns topics
-	output, err := svc.ListTopics(&sns.ListTopicsInput{
-	})
+	output, err := svc.ListTopics(&sns.ListTopicsInput{})
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
@@ -60,7 +59,7 @@ func Listv2SNS(se Session) (SNSList []interface{}) {
 	return SNSList
 }
 
-func (tp *Topic) GetTopicAttributes(se Session,TopicARN string) map[string]*string {
+func (tp *Topic) GetTopicAttributes(se Session, TopicARN string) map[string]*string {
 	// Create an sns service client.
 	svc := sns.New(se.Sess)
 	// Get topic attributes
@@ -83,7 +82,7 @@ func (tp *Topic) GetTopicAttributes(se Session,TopicARN string) map[string]*stri
 	return output.Attributes
 }
 
-func (tp *Topic) ListSubscriptions(se Session,TopicARN string) (Subscriptions map[string]string) {
+func (tp *Topic) ListSubscriptions(se Session, TopicARN string) (Subscriptions map[string]string) {
 	// Create an sns service client.
 	svc := sns.New(se.Sess)
 	// Get topic attributes
@@ -104,7 +103,7 @@ func (tp *Topic) ListSubscriptions(se Session,TopicARN string) (Subscriptions ma
 		return nil
 	}
 	if len(output.Subscriptions) == 100 {
-		tools.InfoLogger.Printf("Subscription For Topic %s > 100 , Data May Missing.",TopicARN)
+		tools.InfoLogger.Printf("Subscription For Topic %s > 100 , Data May Missing.", TopicARN)
 	}
 	//{ endpoint : protocol }
 	Subscriptions = make(map[string]string)

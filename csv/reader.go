@@ -42,7 +42,6 @@ func RateOfProgress(inputFile string) int {
 	return 0
 }
 
-
 //
 //ReadToMaps read csv file line by line and return data with map in a list
 //

@@ -59,7 +59,7 @@ func EC2Tags() {
 					aws.EC2CreateTags(se.Sess, b, *overide)
 				} else {
 					// create a new session
-					se.InitSessionWithAWSProfile(b.Region,b.AWSProfile)
+					se.InitSessionWithAWSProfile(b.Region, b.AWSProfile)
 					//fmt.Println(se.Sess.Config.Credentials)
 					aws.EC2CreateTags(se.Sess, b, *overide)
 				}
@@ -93,7 +93,7 @@ func EC2Tags() {
 					results = append(results, result)
 				} else {
 					// create a new session
-					se.InitSessionWithAWSProfile(b.Region,b.AWSProfile)
+					se.InitSessionWithAWSProfile(b.Region, b.AWSProfile)
 					// fmt.Println(se.Sess.Config.Credentials)
 					_, result := aws.EC2GetTags(se.Sess, b, *tags)
 					results = append(results, result)
@@ -105,12 +105,12 @@ func EC2Tags() {
 			}
 		}
 		var headerline = []interface{}{"ResourceId"}
-		for _, v := range strings.Split(*tags,",") {
+		for _, v := range strings.Split(*tags, ",") {
 			headerline = append(headerline, v)
 		}
-		excel.CreateFile("output-"+*excelFile)
-		excel.SetHeadLine("output-"+*excelFile,"result", headerline)
-		excel.SetListRows("output-"+*excelFile,"result", results)
+		excel.CreateFile("output-" + *excelFile)
+		excel.SetHeadLine("output-"+*excelFile, "result", headerline)
+		excel.SetListRows("output-"+*excelFile, "result", results)
 	default:
 		flag.Usage()
 		tools.ErrorLogger.Fatalln("Illegal Method:", *method)

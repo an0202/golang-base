@@ -17,7 +17,7 @@ import (
 type Queue struct {
 	AccountId string
 	Region    string
-	Name 	  string
+	Name      string
 	Policy    string
 	URL       string
 }
@@ -27,8 +27,7 @@ func Listv2SQS(se Session) (SQSList []interface{}) {
 	// Create an sqs service client.
 	svc := sqs.New(se.Sess)
 	// Get sns topics
-	output, err := svc.ListQueues(&sqs.ListQueuesInput{
-	})
+	output, err := svc.ListQueues(&sqs.ListQueuesInput{})
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
@@ -55,12 +54,12 @@ func Listv2SQS(se Session) (SQSList []interface{}) {
 	return SQSList
 }
 
-func (qe *Queue) GetQueueAttributes(se Session,QueueURL string) map[string]*string {
+func (qe *Queue) GetQueueAttributes(se Session, QueueURL string) map[string]*string {
 	// Create an sqs service client.
 	svc := sqs.New(se.Sess)
 	// Get queue attributes
 	output, err := svc.GetQueueAttributes(&sqs.GetQueueAttributesInput{
-		QueueUrl: aws.String(QueueURL),
+		QueueUrl:       aws.String(QueueURL),
 		AttributeNames: []*string{aws.String("ALL")},
 	})
 	if err != nil {

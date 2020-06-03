@@ -39,14 +39,15 @@ func ListAlarms(se Session) (AlarmList [][]interface{}) {
 	}
 	return AlarmList
 }
+
 //List Alarm Internal
-func listAlarms(se Session, token string,maxResults int) (AlarmList [][]interface{},nextToken string) {
+func listAlarms(se Session, token string, maxResults int) (AlarmList [][]interface{}, nextToken string) {
 	// Create an cloudwatch service client.
 	svc := cloudwatch.New(se.Sess)
 	// Get alarms
 	output, err := svc.DescribeAlarms(&cloudwatch.DescribeAlarmsInput{
 		MaxRecords: aws.Int64(int64(maxResults)),
-		NextToken: aws.String(token),
+		NextToken:  aws.String(token),
 	})
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
@@ -63,7 +64,7 @@ func listAlarms(se Session, token string,maxResults int) (AlarmList [][]interfac
 	}
 	for _, alarm := range output.MetricAlarms {
 		var Alarm []interface{}
-		var actions,dimensions []string
+		var actions, dimensions []string
 		if len(alarm.AlarmActions) == 0 {
 			actions = append(actions, "N/A ")
 		} else {
@@ -82,7 +83,7 @@ func listAlarms(se Session, token string,maxResults int) (AlarmList [][]interfac
 		// handel accountid
 		arnMap := GetARNDetail(*alarm.AlarmArn)
 		accountId := arnMap["accountId"]
-		Alarm = append(Alarm,accountId,se.UsedRegion, *alarm.AlarmName, *alarm.Namespace,
+		Alarm = append(Alarm, accountId, se.UsedRegion, *alarm.AlarmName, *alarm.Namespace,
 			*alarm.MetricName, actions, dimensions)
 		//fmt.Println(Alarm)
 		AlarmList = append(AlarmList, Alarm)

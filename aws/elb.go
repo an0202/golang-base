@@ -20,18 +20,18 @@ type LoadBalancer struct {
 	AccountId string
 	Region    string
 	VPCId     string
-	Name 	  string
+	Name      string
 	DNSName   string
 	ARN       string
 	Type      string
 	Scheme    string
 	//FromPort  int64
 	//ToPort    int64
-	AvailabilityZones       []interface{}
-	SecurityGroups			[]interface{}
-	Listeners				[]interface{}
-	TargetGroups            []interface{}
-	Backends                []interface{}
+	AvailabilityZones []interface{}
+	SecurityGroups    []interface{}
+	Listeners         []interface{}
+	TargetGroups      []interface{}
+	Backends          []interface{}
 }
 
 //List ElastiLBV2
@@ -85,13 +85,13 @@ func Listv2LBv2s(se Session) (LBv2List []interface{}) {
 		LB.Type = *lb.Type
 		LB.Scheme = *lb.Scheme
 		LB.Listeners = LB.ListListeners(se, LB.ARN)
-		LB.TargetGroups,LB.Backends = LB.ListTargetGroups(se, LB.ARN)
+		LB.TargetGroups, LB.Backends = LB.ListTargetGroups(se, LB.ARN)
 		LBv2List = append(LBv2List, *LB)
 	}
 	return LBv2List
 }
 
-func (lb *LoadBalancer) ListListeners(se Session,LBv2ARN string) (ListenerList []interface{}) {
+func (lb *LoadBalancer) ListListeners(se Session, LBv2ARN string) (ListenerList []interface{}) {
 	// Create an elb service client.
 	svc := elbv2.New(se.Sess)
 	// Get lb listener
@@ -114,14 +114,14 @@ func (lb *LoadBalancer) ListListeners(se Session,LBv2ARN string) (ListenerList [
 	if len(output.Listeners) == 0 {
 		ListenerList = append(ListenerList, "N/A")
 	} else {
-		for _ , listener := range output.Listeners {
+		for _, listener := range output.Listeners {
 			ListenerList = append(ListenerList, listener)
 		}
 	}
 	return ListenerList
 }
 
-func (lb *LoadBalancer) ListTargetGroups(se Session,LBv2ARN string) (TargetGroupList,BackendList []interface{}) {
+func (lb *LoadBalancer) ListTargetGroups(se Session, LBv2ARN string) (TargetGroupList, BackendList []interface{}) {
 	// Create an elb service client.
 	svc := elbv2.New(se.Sess)
 	// Get lb targetGroups
@@ -146,18 +146,18 @@ func (lb *LoadBalancer) ListTargetGroups(se Session,LBv2ARN string) (TargetGroup
 		//handle target health
 		BackendList = append(BackendList, "N/A")
 	} else {
-		for _ , targetGroup := range output.TargetGroups {
-			TargetGroupList = append(TargetGroupList,targetGroup)
+		for _, targetGroup := range output.TargetGroups {
+			TargetGroupList = append(TargetGroupList, targetGroup)
 			//handle target health
-			for _,backend := range lb.ListBackends(se, *targetGroup.TargetGroupArn) {
+			for _, backend := range lb.ListBackends(se, *targetGroup.TargetGroupArn) {
 				BackendList = append(BackendList, backend)
 			}
 		}
 	}
-	return TargetGroupList,BackendList
+	return TargetGroupList, BackendList
 }
 
-func (lb *LoadBalancer) ListBackends(se Session,TargetARN string) (BackendList []interface{}) {
+func (lb *LoadBalancer) ListBackends(se Session, TargetARN string) (BackendList []interface{}) {
 	// Create an elb service client.
 	svc := elbv2.New(se.Sess)
 	// Get lb targetGroups
@@ -183,7 +183,7 @@ func (lb *LoadBalancer) ListBackends(se Session,TargetARN string) (BackendList [
 		backEnd[GetARNDetail(TargetARN)["resource"]] = "N/A"
 		BackendList = append(BackendList, backEnd)
 	} else {
-		for _ , targetHealth := range output.TargetHealthDescriptions {
+		for _, targetHealth := range output.TargetHealthDescriptions {
 			backEnd = make(map[string]string)
 			backEnd[GetARNDetail(TargetARN)["resource"]] = *targetHealth.Target.Id
 			BackendList = append(BackendList, backEnd)
@@ -217,7 +217,7 @@ func ListCLBs(se Session) (CLBList [][]interface{}) {
 	for _, lb := range output.LoadBalancerDescriptions {
 		var loadBalancer []interface{}
 		//handle securityGroups listners instances availabilityZones
-		var sgs ,listners ,instances ,azs []interface{}
+		var sgs, listners, instances, azs []interface{}
 		if len(lb.SecurityGroups) == 0 {
 			sgs = append(sgs, "N/A")
 		} else {
@@ -250,10 +250,9 @@ func ListCLBs(se Session) (CLBList [][]interface{}) {
 		//
 		//	tools.WarningLogger.Println("Number Of Clusters > 100 , Data May Missing.")
 		//}
-		loadBalancer = append(loadBalancer, se.AccountId,se.UsedRegion,*lb.VPCId,*lb.LoadBalancerName, *lb.DNSName,
-			*lb.Scheme,azs,sgs,listners,*lb.HealthCheck,instances)
+		loadBalancer = append(loadBalancer, se.AccountId, se.UsedRegion, *lb.VPCId, *lb.LoadBalancerName, *lb.DNSName,
+			*lb.Scheme, azs, sgs, listners, *lb.HealthCheck, instances)
 		CLBList = append(CLBList, loadBalancer)
 	}
 	return CLBList
 }
-

@@ -17,24 +17,24 @@ import (
 )
 
 type DBCluster struct {
-	AccountId               string
-	Region                  string
-	Identifier 	            string
-	Endpoint                string
-	ReaderEndpoint          string
-	EngineMode              string
-	Engine                  string
-	EngineVersion           string
-	Port                    int64
-	MultiAZ	                bool
-	Status                  string
-	MaintenanceWindow       string
-	BackupWindow            string
-	BackupRetention		    int64
-	ParameterGroup          string
-	AvailabilityZones       []interface{}
-	SecurityGroups			[]interface{}
-	Members                 []interface{}
+	AccountId         string
+	Region            string
+	Identifier        string
+	Endpoint          string
+	ReaderEndpoint    string
+	EngineMode        string
+	Engine            string
+	EngineVersion     string
+	Port              int64
+	MultiAZ           bool
+	Status            string
+	MaintenanceWindow string
+	BackupWindow      string
+	BackupRetention   int64
+	ParameterGroup    string
+	AvailabilityZones []interface{}
+	SecurityGroups    []interface{}
+	Members           []interface{}
 }
 
 //List DBClusters
@@ -136,7 +136,7 @@ func ListDBInstances(se Session) (DBInstanceList [][]interface{}) {
 	for _, dbInstance := range output.DBInstances {
 		var db []interface{}
 		//handle securitygroups
-		var sgs,pgs []string
+		var sgs, pgs []string
 		if len(dbInstance.VpcSecurityGroups) == 0 {
 			sgs = append(sgs, "N/A")
 		} else {
@@ -149,7 +149,7 @@ func ListDBInstances(se Session) (DBInstanceList [][]interface{}) {
 			pgs = append(pgs, "N/A")
 		} else {
 			for _, pg := range dbInstance.DBParameterGroups {
-				pgs = append(pgs, *pg.DBParameterGroupName +":"+*pg.ParameterApplyStatus+" ")
+				pgs = append(pgs, *pg.DBParameterGroupName+":"+*pg.ParameterApplyStatus+" ")
 			}
 		}
 		if len(output.DBInstances) >= 100 {
@@ -158,11 +158,11 @@ func ListDBInstances(se Session) (DBInstanceList [][]interface{}) {
 		}
 		// handle account id
 		accountId := GetARNDetail(*dbInstance.DBInstanceArn)["accountId"]
-		db = append(db, accountId, se.UsedRegion,*dbInstance.DBInstanceIdentifier,*dbInstance.DBInstanceClass,
-			*dbInstance.Endpoint.Address,*dbInstance.Engine, *dbInstance.EngineVersion,*dbInstance.Endpoint.Port,
-			*dbInstance.DBSubnetGroup,*dbInstance.AvailabilityZone,*dbInstance.MultiAZ,
+		db = append(db, accountId, se.UsedRegion, *dbInstance.DBInstanceIdentifier, *dbInstance.DBInstanceClass,
+			*dbInstance.Endpoint.Address, *dbInstance.Engine, *dbInstance.EngineVersion, *dbInstance.Endpoint.Port,
+			*dbInstance.DBSubnetGroup, *dbInstance.AvailabilityZone, *dbInstance.MultiAZ,
 			*dbInstance.DBInstanceStatus, *dbInstance.StorageType, *dbInstance.PreferredBackupWindow,
-			*dbInstance.BackupRetentionPeriod,*dbInstance.PreferredMaintenanceWindow,pgs, sgs)
+			*dbInstance.BackupRetentionPeriod, *dbInstance.PreferredMaintenanceWindow, pgs, sgs)
 		DBInstanceList = append(DBInstanceList, db)
 	}
 	return DBInstanceList
