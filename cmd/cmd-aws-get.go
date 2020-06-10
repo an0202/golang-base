@@ -39,7 +39,7 @@ func GetAWSResources() {
 	if *summary == false {
 		if *configFile != "" {
 			configs := excel.ReadToMaps(*configFile, *sheetName)
-			var outputFile = "output.xlsx"
+			var outputFile = "aws-get-output.xlsx"
 			excel.CreateFile(outputFile)
 			for _, config := range configs {
 				c := aws.ExcelConfigMarshal(config)
@@ -71,7 +71,7 @@ func GetAWSResources() {
 			case true:
 				rowsNum := 1
 				var totalHeadLine []interface{}
-				var outputFile = "output.xlsx"
+				var outputFile = "aws-get-output.xlsx"
 				excel.CreateFile(outputFile)
 				for _, config := range configs {
 					c := aws.ExcelConfigMarshal(config)
@@ -95,7 +95,7 @@ func GetAWSResources() {
 			case false:
 				rowsNum := 1
 				var totalHeadLine []interface{}
-				var outputFile = "output.xlsx"
+				var outputFile = "aws-get-output.xlsx"
 				excel.CreateFile(outputFile)
 				for _, config := range configs {
 					c := aws.ExcelConfigMarshal(config)

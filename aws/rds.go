@@ -133,10 +133,15 @@ func ListDBInstances(se Session) (DBInstanceList [][]interface{}) {
 		}
 		return
 	}
+	if len(output.DBInstances) >= 100 {
+		// todo cluster > 100
+		tools.WarningLogger.Println("Number Of DB Instances > 100 , Data May Loss.")
+	}
 	for _, dbInstance := range output.DBInstances {
 		var db []interface{}
 		//handle securitygroups
 		var sgs, pgs []string
+		var env string
 		if len(dbInstance.VpcSecurityGroups) == 0 {
 			sgs = append(sgs, "N/A")
 		} else {
@@ -152,18 +157,53 @@ func ListDBInstances(se Session) (DBInstanceList [][]interface{}) {
 				pgs = append(pgs, *pg.DBParameterGroupName+":"+*pg.ParameterApplyStatus+" ")
 			}
 		}
-		if len(output.DBInstances) >= 100 {
-			// todo cluster > 100
-			tools.WarningLogger.Println("Number Of DB Instances > 100 , Data May Loss.")
+		// handle tags
+		tags := ListDBTags(se, *dbInstance.DBInstanceArn)
+		if v, ok := tags["Env"]; ok {
+			env = v
+		} else {
+			env = "N/A"
 		}
-		// handle account id
-		accountId := GetARNDetail(*dbInstance.DBInstanceArn)["accountId"]
-		db = append(db, accountId, se.UsedRegion, *dbInstance.DBInstanceIdentifier, *dbInstance.DBInstanceClass,
+		accountId := se.AccountId
+		// accountId := GetARNDetail(*dbInstance.DBInstanceArn)["accountId"]
+		db = append(db, accountId, se.UsedRegion, *dbInstance.DBInstanceIdentifier, env, *dbInstance.DBInstanceClass,
 			*dbInstance.Endpoint.Address, *dbInstance.Engine, *dbInstance.EngineVersion, *dbInstance.Endpoint.Port,
 			*dbInstance.DBSubnetGroup, *dbInstance.AvailabilityZone, *dbInstance.MultiAZ,
 			*dbInstance.DBInstanceStatus, *dbInstance.StorageType, *dbInstance.PreferredBackupWindow,
-			*dbInstance.BackupRetentionPeriod, *dbInstance.PreferredMaintenanceWindow, pgs, sgs)
+			*dbInstance.BackupRetentionPeriod, *dbInstance.PreferredMaintenanceWindow, pgs, sgs, tags)
 		DBInstanceList = append(DBInstanceList, db)
 	}
 	return DBInstanceList
+}
+
+//List DBInstances Tags
+func ListDBTags(se Session, dbName string) (DBTags map[string]string) {
+	// Create an rds service client.
+	svc := rds.New(se.Sess)
+	// Get rds instances
+	output, err := svc.ListTagsForResource(&rds.ListTagsForResourceInput{
+		ResourceName: aws.String(dbName),
+	})
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				tools.ErrorLogger.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			tools.ErrorLogger.Println(err.Error())
+		}
+		return
+	}
+	DBTags = make(map[string]string)
+	if len(output.TagList) == 0 {
+		DBTags["N/A"] = "N/A"
+	} else {
+		for _, tag := range output.TagList {
+			DBTags[*tag.Key] = *tag.Value
+		}
+	}
+	return DBTags
 }

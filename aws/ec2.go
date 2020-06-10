@@ -513,7 +513,7 @@ func listVolumes(se Session, token string, maxResults int) (VolumeList [][]inter
 	}
 	for _, volume := range output.Volumes {
 		var Volume []interface{}
-		var name, attachedInstance string
+		var name, env, attachedInstance string
 		var tags []string
 		//handle tags
 		if len(volume.Tags) == 0 {
@@ -523,10 +523,16 @@ func listVolumes(se Session, token string, maxResults int) (VolumeList [][]inter
 				if *tag.Key == "Name" {
 					name = *tag.Value
 				}
+				if *tag.Key == "Env" {
+					env = *tag.Value
+				}
 				tags = append(tags, *tag.Key+":"+*tag.Value+" ")
 			}
 			if len(name) == 0 {
 				name = "N/A "
+			}
+			if len(env) == 0 {
+				env = "N/A "
 			}
 		}
 		//handle attached instance
@@ -537,7 +543,7 @@ func listVolumes(se Session, token string, maxResults int) (VolumeList [][]inter
 				attachedInstance = *attach.InstanceId
 			}
 		}
-		Volume = append(Volume, se.AccountId, se.UsedRegion, name, *volume.VolumeId, attachedInstance, *volume.State, *volume.VolumeType,
+		Volume = append(Volume, se.AccountId, se.UsedRegion, name, env, *volume.VolumeId, attachedInstance, *volume.State, *volume.VolumeType,
 			*volume.Size, *volume.AvailabilityZone)
 		VolumeList = append(VolumeList, Volume)
 	}
@@ -572,7 +578,7 @@ func ListInstances(se Session) (InstanceList [][]interface{}) {
 	for _, reservation := range output.Reservations {
 		for _, instance := range reservation.Instances {
 			var Instance []interface{}
-			var platform, rolearn, instancename, keypair, publicip string
+			var platform, rolearn, instancename, env, keypair, publicip string
 			if instance.Platform != nil {
 				platform = *instance.Platform
 			} else {
@@ -610,21 +616,24 @@ func ListInstances(se Session) (InstanceList [][]interface{}) {
 					if *tag.Key == "Name" {
 						instancename = *tag.Value
 					}
+					if *tag.Key == "Env" {
+						env = *tag.Value
+					}
 					tags = append(tags, *tag.Key+":"+*tag.Value+" ")
 				}
 				if len(instancename) == 0 {
 					instancename = "N/A "
 				}
+				if len(env) == 0 {
+					env = "N/A "
+				}
 			}
-			Instance = append(Instance, se.AccountId, se.UsedRegion, instancename, *instance.InstanceId,
+			Instance = append(Instance, se.AccountId, se.UsedRegion, instancename, env, *instance.InstanceId,
 				*instance.InstanceType, platform, *instance.State.Name, *instance.VpcId,
 				rolearn, *instance.SubnetId, *instance.PrivateIpAddress, publicip, keypair, sgs, tags)
 			//fmt.Println(Instance)
 			InstanceList = append(InstanceList, Instance)
 		}
 	}
-	//for _, i := range InstanceList {
-	//	fmt.Println(i)
-	//}
 	return InstanceList
 }

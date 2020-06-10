@@ -13,7 +13,7 @@ export GOOS="darwin"
 go build -o phoneix-darwin
 */
 func main() {
-	cmd.SamsungBillFilter2()
+	cmd.GetAWSResources()
 }
 
 ////Functional Options

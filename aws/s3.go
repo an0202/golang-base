@@ -9,16 +9,15 @@ package aws
 
 import (
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"golang-base/tools"
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
 type Bucket struct {
@@ -31,6 +30,13 @@ type Bucket struct {
 	LifeCycle  []interface{}
 	Versioning string
 	Website    interface{}
+}
+
+type Object struct {
+	Key          string
+	Size         int64
+	StorageClass string
+	LastModify   string
 }
 
 //List S3Bucket
@@ -257,6 +263,45 @@ func (bk *Bucket) GetLifeCycleRules(se Session, BucketName string) (RuleList []i
 		}
 	}
 	return RuleList
+}
+
+// Return objectList witch contains all object name
+// prefix should not start with "/"
+func S3ListObjects(sess *session.Session, bucket string, prefix string) (ObjectsList []interface{}) {
+	tools.InfoLogger.Println("ListBucket File:", bucket+prefix)
+	svc := s3.New(sess)
+	input := &s3.ListObjectsV2Input{
+		Bucket:  aws.String(bucket),
+		Prefix:  aws.String(prefix),
+		MaxKeys: aws.Int64(1000),
+	}
+	output, err := svc.ListObjectsV2(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case s3.ErrCodeNoSuchBucket:
+				tools.WarningLogger.Println(s3.ErrCodeNoSuchBucket, aerr.Error())
+			default:
+				tools.WarningLogger.Println(aerr.Error())
+			}
+		} else {
+			tools.WarningLogger.Println(err.Error())
+		}
+		return
+	}
+	if len(output.Contents) == 0 {
+		ObjectsList = append(ObjectsList, "N/A")
+	} else {
+		for _, content := range output.Contents {
+			obj := new(Object)
+			obj.Key = *content.Key
+			obj.StorageClass = *content.StorageClass
+			obj.Size = *content.Size
+			obj.LastModify = content.LastModified.String()
+			ObjectsList = append(ObjectsList, *obj)
+		}
+	}
+	return ObjectsList
 }
 
 // Head S3 Object

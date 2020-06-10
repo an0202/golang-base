@@ -8,6 +8,7 @@
 package aws
 
 import (
+	"fmt"
 	"golang-base/excel"
 	"golang-base/tools"
 	"regexp"
@@ -20,25 +21,25 @@ var RegionAbb = map[string]string{
 }
 
 // Excel HeadLine For AWS Resource
-var EC2HeadLine = []interface{}{"AccountId", "Region", "Name", "InstanceId", "InstanceType", "Platform", "State",
+var EC2HeadLine = []interface{}{"AccountId", "Region", "Name", "Env", "InstanceId", "InstanceType", "Platform", "State",
 	"VPCId", "Role", "SubnetId", "PrivateIp", "PublicIp", "KeyPair", "SecurityGroups", "Tags"}
 
-var DBInstanceHeadLine = []interface{}{"AccountId", "Region", "Name", "Type", "EndPoint", "Engine", "EngineVersion",
+var DBInstanceHeadLine = []interface{}{"AccountId", "Region", "Name", "Env", "Type", "EndPoint", "Engine", "EngineVersion",
 	"Port", "SubnetGroup", "AvailabilityZone", "MultiAZ", "Status", "StorageType", "BackupWindow", "BackupPeriod", "MaintenanceWindow",
-	"ParameterGroups", "SecurityGroups"}
+	"ParameterGroups", "SecurityGroups", "Tags"}
 
 var DBClusterHeadline = []interface{}{"AccountId", "Region", "Identifier", "Endpoint", "ReaderEndPoint", "EngineMode", "Engine",
 	"EngineVersion", "Port", "MultiAZ", "Status", "MaintenanceWindow", "BackupWindow", "BackupPeriod", "ParameterGroups",
 	"AvailabilityZone", "SecurityGroups", "Members"}
 
-var ECCHeadLine = []interface{}{"AccountId", "Region", "CacheClusterId", "CacheNodesNumber", "CacheNodeType", "Engine",
-	"EngineVersion", "CacheSubnetGroup", "MaintenanceWindow", "SnapshotRetention", "SecurityGroups"}
+var ECCHeadLine = []interface{}{"AccountId", "Region", "CacheClusterId", "Env", "CacheNodesNumber", "CacheNodeType", "Engine",
+	"EngineVersion", "CacheSubnetGroup", "MaintenanceWindow", "SnapshotRetention", "SecurityGroups", "Tags"}
 
 var KeyPairHeadLine = []interface{}{"AccountId", "Region", "KeyName", "Fingerprint"}
 
 var SnapshotHeadLine = []interface{}{"AccountId", "Region", "SnapshotId", "VolumeId", "Description", "State"}
 
-var VolumeHeadLine = []interface{}{"AccountId", "Region", "Name", "VolumeId", "AttachedInstance", "State", "Type", "Size",
+var VolumeHeadLine = []interface{}{"AccountId", "Region", "Name", "Env", "VolumeId", "AttachedInstance", "State", "Type", "Size",
 	"AvailabilityZone"}
 
 var AMIHeadLine = []interface{}{"AccountId", "Region", "ImageId", "Name", "State"}
@@ -69,6 +70,9 @@ var SNSHeadLine = []interface{}{"AccountId", "Region", "TopicName", "Policy", "A
 //var SQSHeadLine = []interface{}{"AccountId", "Region", "TopicName","Policy","ARN","Subscriptions"}
 
 var S3HeadLine = []interface{}{"AccountId", "Region", "BucketName", "ACL", "Policy", "CORS", "LifeCycle", "Versioning", "WebSite"}
+
+var DynamoDBHeadLine = []interface{}{"AccountId", "Region", "TableName", "Status", "ARN", "SizeBytes", "ReadCapacity",
+	"WriteCapacity", "KeyScheme"}
 
 type ExcelConfig struct {
 	AWSProfile  string
@@ -198,6 +202,10 @@ func (c *ExcelConfig) Do(outputFile string) {
 		excel.SetHeadLine(c.outputFile, c.OutputSheet, S3HeadLine)
 		result := Listv2S3(c.sess)
 		excel.SetStructRows(c.outputFile, c.OutputSheet, result)
+	case "Liv2DynamoDB":
+		excel.SetHeadLine(c.outputFile, c.OutputSheet, DynamoDBHeadLine)
+		result := Listv2DynamoDB(c.sess)
+		excel.SetStructRows(c.outputFile, c.OutputSheet, result)
 	default:
 		tools.WarningLogger.Println("Unsupported Operate:", c.Operate)
 	}
@@ -278,6 +286,9 @@ func (c *ExcelConfig) ReturnResourcesV2() (result []interface{}) {
 	case "Liv2S3":
 		c.HeadLine = S3HeadLine
 		result = Listv2S3(c.sess)
+	case "Liv2DynamoDB":
+		c.HeadLine = DynamoDBHeadLine
+		result = Listv2DynamoDB(c.sess)
 	default:
 		tools.WarningLogger.Println("Unsupported Operate:", c.Operate)
 	}
@@ -307,6 +318,19 @@ func GetARNDetail(arn string) (arnMap map[string]string) {
 		}
 	}
 	return arnMap
+}
+
+//https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
+//arn:partition:service:region:account-id:resource-type:resource-id
+func GenerateARN(se Session, service string, resourceType string, resourceId string) (arn string) {
+	switch se.UsedRegion {
+	case "cn-north-1", "cn-northwest-1":
+		return fmt.Sprintf("arn:aws-cn:%s:%s:%s:%s:%s", service, se.UsedRegion, se.AccountId, resourceType, resourceId)
+	case "gov":
+		return fmt.Sprintf("arn:aws-us-gov:%s:%s:%s:%s:%s", service, se.UsedRegion, se.AccountId, resourceType, resourceId)
+	default:
+		return fmt.Sprintf("arn:aws:%s:%s:%s:%s:%s", service, se.UsedRegion, se.AccountId, resourceType, resourceId)
+	}
 }
 
 // retype from excel
