@@ -1,7 +1,5 @@
 package main
 
-import "golang-base/cmd"
-
 /*GCC
 export GOOS="windows"
 go build -o phoneix-windows.exe

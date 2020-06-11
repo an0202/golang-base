@@ -35,6 +35,9 @@ type Bucket struct {
 }
 
 type Object struct {
+	AccountId    string
+	Region       string
+	Bucket       string
 	Key          string
 	Size         int64
 	StorageClass string
@@ -304,8 +307,9 @@ func (bk *Bucket) GetLifeCycleRules(se Session, BucketName string) (RuleList []i
 }
 
 // Return objectList witch contains all object name
+// Return nil while no content
 // prefix should not start with "/"
-func S3ListObjects(sess *session.Session, bucket string, prefix string) (ObjectsList []interface{}) {
+func S3ListObjects(sess *session.Session, bucket string, prefix string) (ObjectsList []Object) {
 	tools.InfoLogger.Println("ListBucket File:", bucket+prefix)
 	svc := s3.New(sess)
 	input := &s3.ListObjectsV2Input{
@@ -327,11 +331,19 @@ func S3ListObjects(sess *session.Session, bucket string, prefix string) (Objects
 		}
 		return
 	}
+	accountId := GetAccountId(sess)
+	region := *sess.Config.Region
 	if len(output.Contents) == 0 {
-		ObjectsList = append(ObjectsList, "N/A")
+		return nil
 	} else {
 		for _, content := range output.Contents {
+			if strings.HasSuffix(*content.Key, "/") {
+				continue
+			}
 			obj := new(Object)
+			obj.AccountId = accountId
+			obj.Region = region
+			obj.Bucket = bucket
 			obj.Key = *content.Key
 			obj.StorageClass = *content.StorageClass
 			obj.Size = *content.Size
