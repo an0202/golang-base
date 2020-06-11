@@ -24,12 +24,14 @@ type Bucket struct {
 	AccountId  string
 	Region     string
 	Name       string
+	Env        string
 	ACL        []interface{}
 	Policy     string
 	CORS       []interface{}
 	LifeCycle  []interface{}
 	Versioning string
 	Website    interface{}
+	Tags       map[string]string
 }
 
 type Object struct {
@@ -62,6 +64,14 @@ func Listv2S3(se Session) (S3List []interface{}) {
 		BK := new(Bucket)
 		BK.AccountId = se.AccountId
 		BK.Name = *bucket.Name
+		//handle tags
+		tags := ListBucketTags(se, BK.Name)
+		if v, ok := tags["Env"]; ok {
+			BK.Env = v
+		} else {
+			BK.Env = "N/A"
+		}
+		BK.Tags = tags
 		BK.Region = BK.GetBucketLocation(se, BK.Name)
 		//permission
 		BK.ACL = BK.GetBucketACLs(se, BK.Name)
@@ -75,6 +85,34 @@ func Listv2S3(se Session) (S3List []interface{}) {
 		S3List = append(S3List, *BK)
 	}
 	return S3List
+}
+
+//List S3Bucket Tags
+func ListBucketTags(se Session, BucketName string) (BucketTags map[string]string) {
+	// Create an s3 service client.
+	svc := s3.New(se.Sess)
+	// Get Bucket tags
+	output, err := svc.GetBucketTagging(&s3.GetBucketTaggingInput{
+		Bucket: aws.String(BucketName),
+	})
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				tools.ErrorLogger.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			tools.ErrorLogger.Println(err.Error())
+		}
+		return
+	}
+	BucketTags = make(map[string]string)
+	for _, tag := range output.TagSet {
+		BucketTags[*tag.Key] = *tag.Value
+	}
+	return BucketTags
 }
 
 func (bk *Bucket) GetBucketLocation(se Session, BucketName string) string {

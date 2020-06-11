@@ -49,7 +49,7 @@ var EIPHeadLine = []interface{}{"AccountId", "Region", "Name", "PublicIp"}
 var SubnetHeadLine = []interface{}{"AccountId", "Region", "Name", "SubnetId", "VPCId", "CidrBlock", "AvailabilityZone",
 	"DefaultForAz"}
 
-var RouteTableHeadLine = []interface{}{"AccountId", "Region", "Name", "RouteTableId", "VPCId", "Assosications", "Routes"}
+var RouteTableHeadLine = []interface{}{"AccountId", "Region", "Name", "RouteTableId", "VPCId", "Associations", "Routes"}
 
 var PeeringConnectionHeadLine = []interface{}{"AccountId", "Region", "Name", "PeeringId", "RequesterInfo", "AccepterInfo"}
 
@@ -59,20 +59,24 @@ var SGHeadLine = []interface{}{"GroupName", "VpcId", "GroupId", "Protocol", "Sou
 
 var AlarmHeadLine = []interface{}{"AccountId", "Region", "AlarmName", "NameSpace", "MetricName", "Actions", "Dimensions"}
 
-var CLBHeadLine = []interface{}{"AccountId", "Region", "VPCId", "LoadBalancerName", "DNSName", "Scheme", "AvailabilityZone",
-	"SecurityGroups", "Listner", "HealthCheck", "Instances"}
+var CLBHeadLine = []interface{}{"AccountId", "Region", "VPCId", "LoadBalancerName", "Env", "DNSName", "Scheme", "AvailabilityZone",
+	"SecurityGroups", "Listener", "HealthCheck", "Instances", "Tags"}
 
-var LBv2HeadLine = []interface{}{"AccountId", "Region", "VPCId", "LoadBalancerName", "DNSName", "ARN", "Type", "Scheme",
-	"AvailabilityZone", "SecurityGroups", "Listener", "TargetGroups", "Backends"}
+var LBv2HeadLine = []interface{}{"AccountId", "Region", "VPCId", "LoadBalancerName", "Env", "DNSName", "ARN", "Type", "Scheme",
+	"AvailabilityZone", "SecurityGroups", "Listener", "TargetGroups", "Backends", "Tags"}
 
 var SNSHeadLine = []interface{}{"AccountId", "Region", "TopicName", "Policy", "ARN", "Subscriptions"}
 
 //var SQSHeadLine = []interface{}{"AccountId", "Region", "TopicName","Policy","ARN","Subscriptions"}
 
-var S3HeadLine = []interface{}{"AccountId", "Region", "BucketName", "ACL", "Policy", "CORS", "LifeCycle", "Versioning", "WebSite"}
+var S3HeadLine = []interface{}{"AccountId", "Region", "BucketName", "Env", "ACL", "Policy", "CORS", "LifeCycle", "Versioning",
+	"WebSite", "Tags"}
 
-var DynamoDBHeadLine = []interface{}{"AccountId", "Region", "TableName", "Status", "ARN", "SizeBytes", "ReadCapacity",
-	"WriteCapacity", "KeyScheme"}
+var DynamoDBHeadLine = []interface{}{"AccountId", "Region", "TableName", "Env", "Status", "ARN", "SizeBytes", "ReadCapacity",
+	"WriteCapacity", "KeyScheme", "Tags"}
+
+var LambdaHeadLine = []interface{}{"AccountId", "Region", "FunctionName", "Env", "ARN", "MemorySize", "CodeSize", "Handler",
+	"Runtime", "Timeout", "Tags"}
 
 type ExcelConfig struct {
 	AWSProfile  string
@@ -188,7 +192,7 @@ func (c *ExcelConfig) Do(outputFile string) {
 	case "Liv2LBv2":
 		//c.OutputSheet = "ELB"
 		excel.SetHeadLine(c.outputFile, c.OutputSheet, LBv2HeadLine)
-		result := Listv2LBv2s(c.sess)
+		result := Listv2LBv2(c.sess)
 		excel.SetStructRows(c.outputFile, c.OutputSheet, result)
 	case "Liv2SNS":
 		excel.SetHeadLine(c.outputFile, c.OutputSheet, SNSHeadLine)
@@ -205,6 +209,10 @@ func (c *ExcelConfig) Do(outputFile string) {
 	case "Liv2DynamoDB":
 		excel.SetHeadLine(c.outputFile, c.OutputSheet, DynamoDBHeadLine)
 		result := Listv2DynamoDB(c.sess)
+		excel.SetStructRows(c.outputFile, c.OutputSheet, result)
+	case "Liv2Lambda":
+		excel.SetHeadLine(c.outputFile, c.OutputSheet, LambdaHeadLine)
+		result := Listv2Lambda(c.sess)
 		excel.SetStructRows(c.outputFile, c.OutputSheet, result)
 	default:
 		tools.WarningLogger.Println("Unsupported Operate:", c.Operate)
@@ -276,7 +284,7 @@ func (c *ExcelConfig) ReturnResourcesV2() (result []interface{}) {
 	case "Liv2LBv2":
 		//c.OutputSheet = "ELB"
 		c.HeadLine = LBv2HeadLine
-		result = Listv2LBv2s(c.sess)
+		result = Listv2LBv2(c.sess)
 	case "Liv2SNS":
 		c.HeadLine = SNSHeadLine
 		result = Listv2SNS(c.sess)
@@ -289,6 +297,9 @@ func (c *ExcelConfig) ReturnResourcesV2() (result []interface{}) {
 	case "Liv2DynamoDB":
 		c.HeadLine = DynamoDBHeadLine
 		result = Listv2DynamoDB(c.sess)
+	case "Liv2Lambda":
+		c.HeadLine = LambdaHeadLine
+		result = Listv2Lambda(c.sess)
 	default:
 		tools.WarningLogger.Println("Unsupported Operate:", c.Operate)
 	}

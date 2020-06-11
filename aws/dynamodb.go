@@ -14,16 +14,18 @@ import (
 	"golang-base/tools"
 )
 
-type Table struct {
+type DynamoDBTable struct {
 	AccountId     string
 	Region        string
 	Name          string
+	Env           string
 	Status        string
 	ARN           string
 	SizeBytes     int64
 	ReadCapacity  int64
 	WriteCapacity int64
 	KeyScheme     []interface{}
+	Tags          map[string]string
 }
 
 //List DynamoDBs
@@ -46,15 +48,15 @@ func Listv2DynamoDB(se Session) (DynamoDBList []interface{}) {
 		return
 	}
 	for _, tableName := range output.TableNames {
-		BK := new(Table)
-		BK.AccountId = se.AccountId
-		BK.describeTable(se, *tableName)
-		DynamoDBList = append(DynamoDBList, *BK)
+		dt := new(DynamoDBTable)
+		dt.AccountId = se.AccountId
+		dt.describeTable(se, *tableName)
+		DynamoDBList = append(DynamoDBList, *dt)
 	}
 	return DynamoDBList
 }
 
-func (tb *Table) describeTable(se Session, TableName string) Table {
+func (dt *DynamoDBTable) describeTable(se Session, TableName string) DynamoDBTable {
 	// Create an dynamoDB service client.
 	svc := dynamodb.New(se.Sess)
 	// describe table
@@ -72,19 +74,55 @@ func (tb *Table) describeTable(se Session, TableName string) Table {
 			// Message from an error.
 			tools.ErrorLogger.Println(err.Error())
 		}
-		return *tb
+		return *dt
 	}
-	tb.Name = *output.Table.TableName
-	tb.Region = se.UsedRegion
-	tb.Status = *output.Table.TableStatus
-	tb.ARN = *output.Table.TableArn
-	tb.SizeBytes = *output.Table.TableSizeBytes
-	tb.ReadCapacity = *output.Table.ProvisionedThroughput.ReadCapacityUnits
-	tb.WriteCapacity = *output.Table.ProvisionedThroughput.WriteCapacityUnits
+	dt.Name = *output.Table.TableName
+	dt.Region = se.UsedRegion
+	dt.Status = *output.Table.TableStatus
+	dt.ARN = *output.Table.TableArn
+	//handle tags
+	tags := ListDynamoDBTags(se, dt.ARN)
+	if v, ok := tags["Env"]; ok {
+		dt.Env = v
+	} else {
+		dt.Env = "N/A"
+	}
+	dt.Tags = tags
+	dt.SizeBytes = *output.Table.TableSizeBytes
+	dt.ReadCapacity = *output.Table.ProvisionedThroughput.ReadCapacityUnits
+	dt.WriteCapacity = *output.Table.ProvisionedThroughput.WriteCapacityUnits
 	if len(output.Table.KeySchema) != 0 {
 		for _, key := range output.Table.KeySchema {
-			tb.KeyScheme = append(tb.KeyScheme, *key)
+			dt.KeyScheme = append(dt.KeyScheme, *key)
 		}
 	}
-	return *tb
+	return *dt
+}
+
+//List DynamoDBTags Tags
+func ListDynamoDBTags(se Session, DynamoDBName string) (DynamoDBTags map[string]string) {
+	// Create an DynamoDB service client.
+	svc := dynamodb.New(se.Sess)
+	// Get DynamoDB tags
+	output, err := svc.ListTagsOfResource(&dynamodb.ListTagsOfResourceInput{
+		ResourceArn: aws.String(DynamoDBName),
+	})
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				tools.ErrorLogger.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			tools.ErrorLogger.Println(err.Error())
+		}
+		return
+	}
+	DynamoDBTags = make(map[string]string)
+	for _, tag := range output.Tags {
+		DynamoDBTags[*tag.Key] = *tag.Value
+	}
+	return DynamoDBTags
 }

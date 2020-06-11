@@ -92,12 +92,8 @@ func ListCacheTags(se Session, cacheName string) (CacheTags map[string]string) {
 		return
 	}
 	CacheTags = make(map[string]string)
-	if len(output.TagList) == 0 {
-		CacheTags["N/A"] = "N/A"
-	} else {
-		for _, tag := range output.TagList {
-			CacheTags[*tag.Key] = *tag.Value
-		}
+	for _, tag := range output.TagList {
+		CacheTags[*tag.Key] = *tag.Value
 	}
 	return CacheTags
 }

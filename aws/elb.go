@@ -21,6 +21,7 @@ type LoadBalancer struct {
 	Region    string
 	VPCId     string
 	Name      string
+	Env       string
 	DNSName   string
 	ARN       string
 	Type      string
@@ -32,10 +33,11 @@ type LoadBalancer struct {
 	Listeners         []interface{}
 	TargetGroups      []interface{}
 	Backends          []interface{}
+	Tags              map[string]string
 }
 
 //List ElastiLBV2
-func Listv2LBv2s(se Session) (LBv2List []interface{}) {
+func Listv2LBv2(se Session) (LBv2List []interface{}) {
 	// Create an elb service client.
 	svc := elbv2.New(se.Sess)
 	// Get lb
@@ -76,6 +78,14 @@ func Listv2LBv2s(se Session) (LBv2List []interface{}) {
 		//
 		//	tools.WarningLogger.Println("Number Of Clusters > 100 , Data May Missing.")
 		//}
+		// handle tags
+		tags := ListLBv2Tags(se, *lb.LoadBalancerArn)
+		if v, ok := tags["Env"]; ok {
+			LB.Env = v
+		} else {
+			LB.Env = "N/A"
+		}
+		LB.Tags = tags
 		LB.AccountId = se.AccountId
 		LB.Region = se.UsedRegion
 		LB.VPCId = *lb.VpcId
@@ -193,6 +203,34 @@ func (lb *LoadBalancer) ListBackends(se Session, TargetARN string) (BackendList 
 	return BackendList
 }
 
+//List LBv2 Tags
+func ListLBv2Tags(se Session, LBv2Name string) (LBv2Tags map[string]string) {
+	// Create an elbv2 service client.
+	svc := elbv2.New(se.Sess)
+	// Get elbv2 tags
+	output, err := svc.DescribeTags(&elbv2.DescribeTagsInput{
+		ResourceArns: aws.StringSlice([]string{LBv2Name}),
+	})
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				tools.ErrorLogger.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			tools.ErrorLogger.Println(err.Error())
+		}
+		return
+	}
+	LBv2Tags = make(map[string]string)
+	for _, tag := range output.TagDescriptions[0].Tags {
+		LBv2Tags[*tag.Key] = *tag.Value
+	}
+	return LBv2Tags
+}
+
 //List ElastiLBV1
 func ListCLBs(se Session) (CLBList [][]interface{}) {
 	// Create an elb service client.
@@ -216,6 +254,7 @@ func ListCLBs(se Session) (CLBList [][]interface{}) {
 	}
 	for _, lb := range output.LoadBalancerDescriptions {
 		var loadBalancer []interface{}
+		var env string
 		//handle securityGroups listners instances availabilityZones
 		var sgs, listners, instances, azs []interface{}
 		if len(lb.SecurityGroups) == 0 {
@@ -246,13 +285,48 @@ func ListCLBs(se Session) (CLBList [][]interface{}) {
 				azs = append(azs, *az)
 			}
 		}
+		// handle tags
+		tags := ListCLBTags(se, *lb.LoadBalancerName)
+		if v, ok := tags["Env"]; ok {
+			env = v
+		} else {
+			env = "N/A"
+		}
 		//if len(output.CacheClusters) >= 100 {
 		//
 		//	tools.WarningLogger.Println("Number Of Clusters > 100 , Data May Missing.")
 		//}
-		loadBalancer = append(loadBalancer, se.AccountId, se.UsedRegion, *lb.VPCId, *lb.LoadBalancerName, *lb.DNSName,
-			*lb.Scheme, azs, sgs, listners, *lb.HealthCheck, instances)
+		loadBalancer = append(loadBalancer, se.AccountId, se.UsedRegion, *lb.VPCId, *lb.LoadBalancerName, env, *lb.DNSName,
+			*lb.Scheme, azs, sgs, listners, *lb.HealthCheck, instances, tags)
 		CLBList = append(CLBList, loadBalancer)
 	}
 	return CLBList
+}
+
+//List CLB Tags
+func ListCLBTags(se Session, clbName string) (CLBTags map[string]string) {
+	// Create an elb service client.
+	svc := elb.New(se.Sess)
+	// Get elb tags
+	output, err := svc.DescribeTags(&elb.DescribeTagsInput{
+		LoadBalancerNames: aws.StringSlice([]string{clbName}),
+	})
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				tools.ErrorLogger.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			tools.ErrorLogger.Println(err.Error())
+		}
+		return
+	}
+	CLBTags = make(map[string]string)
+	for _, tag := range output.TagDescriptions[0].Tags {
+		CLBTags[*tag.Key] = *tag.Value
+	}
+	return CLBTags
 }

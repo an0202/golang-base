@@ -198,12 +198,8 @@ func ListDBTags(se Session, dbName string) (DBTags map[string]string) {
 		return
 	}
 	DBTags = make(map[string]string)
-	if len(output.TagList) == 0 {
-		DBTags["N/A"] = "N/A"
-	} else {
-		for _, tag := range output.TagList {
-			DBTags[*tag.Key] = *tag.Value
-		}
+	for _, tag := range output.TagList {
+		DBTags[*tag.Key] = *tag.Value
 	}
 	return DBTags
 }
