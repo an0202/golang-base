@@ -385,18 +385,15 @@ func ListSnapshots(se Session) (SnapshotList [][]interface{}) {
 	for nextToken != "" {
 		//fmt.Println("Start Loop With Token:", token)
 		snapshots, nextToken = listSnapshots(se, token, maxResults)
-		for _, snapshot := range snapshots {
-			SnapshotList = append(SnapshotList, snapshot)
-		}
-		if len(snapshots) == maxResults && nextToken != "" {
-			snapshots, nextToken = listSnapshots(se, nextToken, maxResults)
+		if nextToken != "" {
 			for _, snapshot := range snapshots {
 				SnapshotList = append(SnapshotList, snapshot)
 			}
-			//fmt.Println("Generated New NextToken:      ",nextToken)
 			token = nextToken
-		} else {
-			nextToken = ""
+		} else if len(snapshots) != 0 {
+			for _, snapshot := range snapshots {
+				SnapshotList = append(SnapshotList, snapshot)
+			}
 		}
 	}
 	return SnapshotList
@@ -428,8 +425,19 @@ func listSnapshots(se Session, token string, maxResults int) (SnapshotList [][]i
 	}
 	for _, snapshot := range output.Snapshots {
 		var Snapshot []interface{}
-		Snapshot = append(Snapshot, *snapshot.OwnerId, se.UsedRegion, *snapshot.SnapshotId, *snapshot.VolumeId,
-			*snapshot.Description, *snapshot.State)
+		//handle tags
+		var tags map[string]string
+		tags = make(map[string]string)
+		if len(snapshot.Tags) != 0 {
+			for _, tag := range snapshot.Tags {
+				tags[*tag.Key] = *tag.Value
+			}
+		} else {
+			tags["N/A"] = "N/A"
+		}
+		name := tags["Name"]
+		Snapshot = append(Snapshot, *snapshot.OwnerId, se.UsedRegion, name, *snapshot.SnapshotId, *snapshot.VolumeId,
+			*snapshot.Description, *snapshot.State, tags)
 		SnapshotList = append(SnapshotList, Snapshot)
 	}
 	if output.NextToken == nil {
@@ -468,21 +476,19 @@ func ListVolumes(se Session) (VolumeList [][]interface{}) {
 	var vols [][]interface{}
 	var nextToken = "default"
 	for nextToken != "" {
-		//fmt.Println("use nextToken:",nextToken)
+		//fmt.Println("Start Loop With Token:", token)
 		vols, nextToken = listVolumes(se, token, maxResults)
-		for _, vol := range vols {
-			VolumeList = append(VolumeList, vol)
-		}
-		if len(vols) == maxResults && nextToken != "" {
+		if nextToken != "" {
 			//tools.WarningLogger.Println("Get More Volumes ......")
-			vols, nextToken = listVolumes(se, nextToken, maxResults)
 			for _, vol := range vols {
 				VolumeList = append(VolumeList, vol)
 			}
 			//fmt.Println("nextTokenGenerate:      ",nextToken)
 			token = nextToken
-		} else {
-			nextToken = ""
+		} else if len(vols) != 0 {
+			for _, vol := range vols {
+				VolumeList = append(VolumeList, vol)
+			}
 		}
 	}
 	return VolumeList

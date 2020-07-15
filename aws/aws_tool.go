@@ -37,7 +37,7 @@ var ECCHeadLine = []interface{}{"AccountId", "Region", "CacheClusterId", "Env", 
 
 var KeyPairHeadLine = []interface{}{"AccountId", "Region", "KeyName", "Fingerprint"}
 
-var SnapshotHeadLine = []interface{}{"AccountId", "Region", "SnapshotId", "VolumeId", "Description", "State"}
+var SnapshotHeadLine = []interface{}{"AccountId", "Region", "Name", "SnapshotId", "VolumeId", "Description", "State", "Tags"}
 
 var VolumeHeadLine = []interface{}{"AccountId", "Region", "Name", "Env", "VolumeId", "AttachedInstance", "State", "Type", "Size",
 	"AvailabilityZone"}
