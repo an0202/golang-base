@@ -13,7 +13,7 @@ export GOOS="darwin"
 go build -o phoneix-darwin
 */
 func main() {
-	cmd.GetAWSResources()
+	cmd.Execute()
 }
 
 ////Functional Options
