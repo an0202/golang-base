@@ -118,5 +118,5 @@ func init() {
 	RootCmd.AddCommand(getCmd)
 	getCmd.Flags().StringP("file", "f", "config.xlsx", "Read Config From Excel Line By Line")
 	getCmd.Flags().StringP("sheet", "s", "default_config", `Sheet With Config To Be Process`)
-	getCmd.Flags().Bool("s", false, `Summarize The Operation Results To Sheet "Total", Operate Must Be Same!`)
+	getCmd.Flags().Bool("collect", false, `Summarize The Operation Results To Sheet "Total", Operate Must Be Same!`)
 }
