@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"golang-base/tools"
 	"io"
+	"log"
 	"math"
 	"os"
 )
@@ -43,8 +44,8 @@ func RateOfProgress(inputFile string) int {
 }
 
 //
-//ReadToMaps read csv file line by line and return data with map in a list
-//
+// Convert CSV Records to Dictionaries using Header Row as Keys
+// https://gist.github.com/drernie/5684f9def5bee832ebc50cabb46c377a
 //CSV:
 //
 //	A     B     C
@@ -62,55 +63,33 @@ func RateOfProgress(inputFile string) int {
 //	{"Name":"Bob","Age":"22","Sex":"Male"}
 //
 //]
-//
-//todo: https://gist.github.com/drernie/5684f9def5bee832ebc50cabb46c377a
-//func ReadToMaps(csvfile) (rowmaps []map[string]string) {
-//	// Read CSV File
-//	inputCSV, inputError := os.OpenFile(inputFile, os.O_RDONLY, 0666)
-//	if inputError != nil {
-//		tools.ErrorLogger.Fatalln("Error While Open CSV File")
-//	}
-//	defer inputCSV.Close()
-//	// Init CSV Reader
-//	reader := csv.NewReader(inputCSV)
-//	f, err := excelize.OpenFile(excelfile)
-//	if err != nil {
-//		tools.ErrorLogger.Fatalln(err)
-//	}
-//	// headline type
-//	headline := make(map[int]string)
-//	tmprows, tmperr := f.Rows(sheetname)
-//	if tmperr != nil {
-//		tools.ErrorLogger.Fatalln(tmperr)
-//	}
-//	headrow, headerr := tmprows.Columns()
-//	if headerr != nil {
-//		tools.ErrorLogger.Fatalln(headerr)
-//	}
-//	for k, v := range headrow {
-//		headline[k] = v
-//	}
-//	tools.InfoLogger.Println("HeadLine:", headline)
-//	// iter all rows
-//	//var rowmaps []map[string]string
-//	rows, err := f.GetRows(sheetname)
-//	if err != nil {
-//		tools.ErrorLogger.Fatalln(err)
-//	}
-//	for _, row := range rows {
-//		rowmap := make(map[string]string)
-//		for k, v := range row {
-//			//skip head line (title)
-//			if row[k] == headline[k] {
-//				continue
-//			} else {
-//				rowmap[headline[k]] = v
-//			}
-//		}
-//		if len(rowmap) != 0 {
-//			rowmaps = append(rowmaps, rowmap)
-//		}
-//	}
-//	// return rowdata in map with out headeline (title)
-//	return rowmaps
-//}
+func ReadToMaps(inputFile string) (rowMaps []map[string]string) {
+	// Read CSV File
+	inputCSV, inputError := os.OpenFile(inputFile, os.O_RDONLY, 0666)
+	if inputError != nil {
+		tools.ErrorLogger.Fatalln("Error While Open CSV File")
+	}
+	defer inputCSV.Close()
+	// Init CSV Reader
+	r := csv.NewReader(inputCSV)
+	var header []string
+	for {
+		record, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+		if header == nil {
+			header = record
+		} else {
+			dict := map[string]string{}
+			for i := range header {
+				dict[header[i]] = record[i]
+			}
+			rowMaps = append(rowMaps, dict)
+		}
+	}
+	return rowMaps
+}
