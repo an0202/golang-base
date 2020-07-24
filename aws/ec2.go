@@ -10,6 +10,7 @@ package aws
 import (
 	"fmt"
 	"golang-base/tools"
+	"strconv"
 	"strings"
 	"time"
 
@@ -642,4 +643,122 @@ func ListInstances(se Session) (InstanceList [][]interface{}) {
 		}
 	}
 	return InstanceList
+}
+
+//Describe Instances
+func describeInstance(se *session.Session, instanceId string) *ec2.Instance {
+	// Create an EC2 service client.
+	svc := ec2.New(se)
+	// Get instance tag name
+	output, err := svc.DescribeInstances(&ec2.DescribeInstancesInput{
+		InstanceIds: aws.StringSlice([]string{instanceId}),
+		DryRun:      aws.Bool(false),
+	})
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				tools.ErrorLogger.Fatalln(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			tools.ErrorLogger.Fatalln(err.Error())
+		}
+	}
+	instance := output.Reservations[0].Instances[0]
+	return instance
+}
+
+//Run Instance
+func EC2LaunchMoreLikeThis(se *session.Session, instanceId string, amiId string, dryRun bool) {
+	// Create an EC2 service client.
+	svc := ec2.New(se)
+	// describe instance
+	output, err := svc.DescribeInstances(&ec2.DescribeInstancesInput{
+		InstanceIds: aws.StringSlice([]string{instanceId}),
+		DryRun:      aws.Bool(false),
+	})
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				tools.ErrorLogger.Fatalln(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			tools.ErrorLogger.Fatalln(err.Error())
+		}
+	}
+	old := output.Reservations[0].Instances[0]
+	// handle monitoring state
+	monitor, _ := strconv.ParseBool(*old.Monitoring.State)
+	// handle securityGroup
+	var sgs []string
+	for _, sg := range old.SecurityGroups {
+		sgs = append(sgs, *sg.GroupId)
+	}
+	// run instance
+	newInstances, err := svc.RunInstances(&ec2.RunInstancesInput{
+		DisableApiTermination: aws.Bool(true),
+		DryRun:                aws.Bool(dryRun),
+		EbsOptimized:          old.EbsOptimized,
+		ImageId:               aws.String(amiId),
+		InstanceType:          old.InstanceType,
+		KeyName:               old.KeyName,
+		MaxCount:              aws.Int64(1),
+		MinCount:              aws.Int64(1),
+		Monitoring:            &ec2.RunInstancesMonitoringEnabled{Enabled: aws.Bool(monitor)},
+		SecurityGroupIds:      aws.StringSlice(sgs),
+		SubnetId:              old.SubnetId,
+		TagSpecifications: []*ec2.TagSpecification{
+			{
+				ResourceType: aws.String("instance"),
+				Tags:         old.Tags,
+			},
+		},
+	})
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				tools.ErrorLogger.Fatalln(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			tools.ErrorLogger.Fatalln(err.Error())
+		}
+	}
+	// print new instances id
+	var instanceIds []string
+	for _, n := range newInstances.Instances {
+		instanceIds = append(instanceIds, *n.InstanceId)
+	}
+	tools.InfoLogger.Println("Start New Instances:", instanceIds)
+	// handle role
+	if old.IamInstanceProfile != nil {
+		tools.InfoLogger.Printf("Attaching EC2 Role %s In 10 seconds...", *old.IamInstanceProfile.Arn)
+		time.Sleep(10 * time.Second)
+		for _, id := range instanceIds {
+			tools.InfoLogger.Printf("Attaching Role to Instance %s. \n", id)
+			_, err = svc.AssociateIamInstanceProfile(&ec2.AssociateIamInstanceProfileInput{
+				IamInstanceProfile: &ec2.IamInstanceProfileSpecification{
+					Arn: old.IamInstanceProfile.Arn,
+				},
+				InstanceId: aws.String(id),
+			})
+			if aerr, ok := err.(awserr.Error); ok {
+				switch aerr.Code() {
+				default:
+					tools.WarningLogger.Println(aerr.Error())
+				}
+			} else {
+				// Print the error, cast err to awserr.Error to get the Code and
+				// Message from an error.
+				tools.WarningLogger.Println(err.Error())
+			}
+		}
+	}
 }
