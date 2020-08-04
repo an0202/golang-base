@@ -3,6 +3,7 @@ package csv
 import (
 	"encoding/csv"
 	"fmt"
+	"github.com/dimchansky/utfbom"
 	"golang-base/tools"
 	"io"
 	"log"
@@ -71,8 +72,9 @@ func ReadToMaps(inputFile string) (rowMaps []map[string]string) {
 		tools.ErrorLogger.Fatalln("Error While Open CSV File")
 	}
 	defer inputCSV.Close()
-	// Init CSV Reader
-	r := csv.NewReader(inputCSV)
+	// Init CSV Reader and handle BOM
+	bomReader := utfbom.SkipOnly(inputCSV)
+	r := csv.NewReader(bomReader)
 	var header []string
 	for {
 		record, err := r.Read()
@@ -83,11 +85,14 @@ func ReadToMaps(inputFile string) (rowMaps []map[string]string) {
 			log.Fatal(err)
 		}
 		if header == nil {
-			header = record
+			for _, v := range record {
+				header = append(header, strings.TrimSpace(v))
+			}
+			fmt.Println(header)
 		} else {
 			dict := map[string]string{}
 			for i := range header {
-				dict[strings.TrimSpace(header[i])] = record[i]
+				dict[header[i]] = record[i]
 			}
 			rowMaps = append(rowMaps, dict)
 		}
