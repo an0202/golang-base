@@ -19,4 +19,6 @@ Flags:
 
 Use "aws-base [command] --help" for more information about a command.
 ```
-## Excel文件处理
+## 文件处理
++ Excel：Excel逐行读入Map，写入数据
++ CSV： CSV逐行读入Map

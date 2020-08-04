@@ -8,6 +8,7 @@ import (
 	"log"
 	"math"
 	"os"
+	"strings"
 )
 
 // PrintTitle return the first line of csv file
@@ -86,7 +87,7 @@ func ReadToMaps(inputFile string) (rowMaps []map[string]string) {
 		} else {
 			dict := map[string]string{}
 			for i := range header {
-				dict[header[i]] = record[i]
+				dict[strings.TrimSpace(header[i])] = record[i]
 			}
 			rowMaps = append(rowMaps, dict)
 		}

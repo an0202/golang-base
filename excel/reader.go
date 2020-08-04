@@ -9,6 +9,7 @@ package excel
 
 import (
 	"golang-base/tools"
+	"strings"
 
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
 )
@@ -54,7 +55,7 @@ func ReadToMaps(excelFile, sheetName string) (rowMaps []map[string]string) {
 		tools.ErrorLogger.Fatalln(headErr)
 	}
 	for k, v := range headRow {
-		headline[k] = v
+		headline[k] = strings.TrimSpace(v)
 	}
 	tools.InfoLogger.Println("HeadLine:", headline)
 	// iter all rows
