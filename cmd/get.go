@@ -24,7 +24,7 @@ var getCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		file, _ := cmd.Flags().GetString("file")
 		sheetName, _ := cmd.Flags().GetString("sheet")
-		summary, _ := cmd.Flags().GetBool("s")
+		summary, _ := cmd.Flags().GetBool("collect")
 		// Read Config From File
 		if summary == false {
 			if file != "" {
