@@ -6,7 +6,6 @@ import (
 	"github.com/dimchansky/utfbom"
 	"golang-base/tools"
 	"io"
-	"log"
 	"math"
 	"os"
 	"strings"
@@ -82,13 +81,12 @@ func ReadToMaps(inputFile string) (rowMaps []map[string]string) {
 			break
 		}
 		if err != nil {
-			log.Fatal(err)
+			tools.WarningLogger.Panicln(err)
 		}
 		if header == nil {
 			for _, v := range record {
 				header = append(header, strings.TrimSpace(v))
 			}
-			fmt.Println(header)
 		} else {
 			dict := map[string]string{}
 			for i := range header {
