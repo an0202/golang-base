@@ -19,8 +19,8 @@ func CountRecord(srcFile string) int {
 	defer inputFile.Close()
 	// Init Scanner
 	scanner := bufio.NewScanner(inputFile)
-	buf := make([]byte, 4*1024)
-	scanner.Buffer(buf, 10*1024)
+	buf := make([]byte, 512*1024)
+	scanner.Buffer(buf, 1024*1024)
 	lineCount := 0
 	// Count
 	for scanner.Scan() {
@@ -48,8 +48,8 @@ func PrintNRecord(srcFile string, N int) {
 	defer inputFile.Close()
 	// Init Scanner
 	scanner := bufio.NewScanner(inputFile)
-	buf := make([]byte, 4*1024)
-	scanner.Buffer(buf, 10*1024)
+	buf := make([]byte, 512*1024)
+	scanner.Buffer(buf, 1024*1024)
 	lineCount := 1
 	// Count
 	for scanner.Scan() {
@@ -74,8 +74,8 @@ func GetRecords(srcFile string) []string {
 	defer inputFile.Close()
 	// Init Scanner
 	scanner := bufio.NewScanner(inputFile)
-	buf := make([]byte, 4*1024)
-	scanner.Buffer(buf, 10*1024)
+	buf := make([]byte, 512*1024)
+	scanner.Buffer(buf, 1024*1024)
 	var values []string
 	// Count
 	for scanner.Scan() {
