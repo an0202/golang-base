@@ -65,12 +65,20 @@ func listAlarms(se Session, token string, maxResults int) (AlarmList [][]interfa
 	for _, alarm := range output.MetricAlarms {
 		var Alarm []interface{}
 		var actions, dimensions []string
+		var nameSpace string
+		var metrics []interface{}
 		if len(alarm.AlarmActions) == 0 {
 			actions = append(actions, "N/A ")
 		} else {
 			for _, action := range alarm.AlarmActions {
 				actions = append(actions, *action)
 			}
+		}
+		//handel namespace
+		if alarm.Namespace == nil {
+			nameSpace = "N/A"
+		} else {
+			nameSpace = *alarm.Namespace
 		}
 		//handle dimensions
 		if len(alarm.Dimensions) == 0 {
@@ -80,11 +88,19 @@ func listAlarms(se Session, token string, maxResults int) (AlarmList [][]interfa
 				dimensions = append(dimensions, *dimension.Name+":"+*dimension.Value+" ")
 			}
 		}
+		//handle metricNames
+		if len(alarm.Metrics) == 0 {
+			metrics = append(metrics, *alarm.MetricName)
+		} else {
+			for _, metric := range alarm.Metrics {
+				metrics = append(metrics, *metric)
+			}
+		}
 		// handel accountid
 		arnMap := GetARNDetail(*alarm.AlarmArn)
 		accountId := arnMap["accountId"]
-		Alarm = append(Alarm, accountId, se.UsedRegion, *alarm.AlarmName, *alarm.Namespace,
-			*alarm.MetricName, actions, dimensions)
+		Alarm = append(Alarm, accountId, se.UsedRegion, *alarm.AlarmName, actions,
+			nameSpace, dimensions)
 		//fmt.Println(Alarm)
 		AlarmList = append(AlarmList, Alarm)
 	}
