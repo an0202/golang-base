@@ -2,8 +2,8 @@
  * @Author: jie.an
  * @Description:
  * @File:  root.go
- * @Version: 1.0.0
- * @Date: 2020/7/20 14:34
+ * @Version: 0.0.2
+ * @Date: 2021/3/7 14:34
  */
 package cmd
 
@@ -13,12 +13,12 @@ import (
 	"os"
 )
 
-const VERSION = "0.0.1"
+const VERSION = "0.0.2"
 
 var RootCmd = &cobra.Command{
-	Use:   "aws-base",
-	Short: "AWS resource processing tools",
-	Long: fmt.Sprintf(`AWS resource processing tools: get assets,  create ami, create tag.
+	Use:   "base-tool",
+	Short: "AWS/Aliyun resource processing tools",
+	Long: fmt.Sprintf(`AWS/Aliyun resource processing tools.
 
 Version: %s`,
 		VERSION),
