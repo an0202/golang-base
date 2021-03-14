@@ -9,22 +9,19 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
 	"golang-base/cmd"
 )
 
 // aliyunCmd
-var aliyunCmd = &cobra.Command{
+var AliyunCmd = &cobra.Command{
 	Use:   "aliyun",
 	Short: "Handle aliyun",
 	Long: `Handle aliyun tool set,
 `,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("aliyun")
-	},
 }
 
 func init() {
-	cmd.RootCmd.AddCommand(aliyunCmd)
+	cmd.RootCmd.AddCommand(AliyunCmd)
+	AliyunCmd.PersistentFlags().StringP("region", "r", "us-east-1", `region`)
 }

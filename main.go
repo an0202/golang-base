@@ -4,6 +4,7 @@ package main
 import (
 	"golang-base/cmd"
 	_ "golang-base/cmd/aliyun"
+	_ "golang-base/cmd/huaweicloud"
 )
 
 func main() {

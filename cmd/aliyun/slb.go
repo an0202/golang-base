@@ -26,21 +26,16 @@ var SlbCmd = &cobra.Command{
 		srcId, _ := cmd.Flags().GetString("src")
 		if file != "" {
 			tools.ErrorLogger.Fatalln("Not support yet")
-			slbIds := tools.GetRecords(file)
-			pro := aliyun.NewProvider(region)
-			for _, slbId := range slbIds {
-				aliyun.DescribeSLB(*pro, slbId)
-			}
 		} else {
 			tools.InfoLogger.Printf("Migrate the backend server from %s to %s .", srcId, destId)
-			pro := aliyun.NewProvider(region)
-			lb, err := aliyun.DescribeSLB(*pro, srcId)
+			conf := aliyun.NewConfig(region)
+			lb, err := aliyun.DescribeSLB(conf, srcId)
 			if err != nil {
 				tools.ErrorLogger.Fatalln(err)
 			}
 			// set lb id
 			lb.Id = destId
-			err = aliyun.AddBackEndServer(*pro, *lb)
+			err = aliyun.AddBackEndServer(conf, lb)
 			if err != nil {
 				tools.WarningLogger.Println(err)
 			} else {
@@ -51,9 +46,8 @@ var SlbCmd = &cobra.Command{
 }
 
 func init() {
-	aliyunCmd.AddCommand(SlbCmd)
+	AliyunCmd.AddCommand(SlbCmd)
 	SlbCmd.Flags().StringP("file", "f", "", "file with slbId line by line")
-	SlbCmd.Flags().StringP("region", "r", "us-east-1", `region`)
 	SlbCmd.Flags().StringP("src", "s", "lb-0xia3woxxxxxepdy76t", `src slb id`)
 	SlbCmd.Flags().StringP("dest", "d", "lb-0xil9xoxxxxxd8ty9hyc", `dest slb id`)
 }

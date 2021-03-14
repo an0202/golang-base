@@ -1,0 +1,12 @@
+#!/bin/bash
+#
+datacenter=ali
+team=dsp
+group=dsp_juno
+name=vg_dsp_junoAli
+consul_dc=dsp-vg-consul
+consul_sv="vg-dsp-consul-ali-internal.rayjump.com"
+zabbix_md=LinuxMobvista_dsp_juno
+#
+/opt/tools/init.sh -d ${datacenter} -t ${team} -g ${group} \
+-n ${name} -x ${consul_dc} -y ${consul_sv} -z ${zabbix_md}

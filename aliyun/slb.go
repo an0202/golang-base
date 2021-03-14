@@ -3,80 +3,94 @@
  * @Description:
  * @File:  slb.go
  * @Version: 1.0.0
- * @Date: 2021/03/07 18:50
+ * @Date: 2021/03/12 18:50
  */
 package aliyun
 
 import (
 	"encoding/json"
-	"github.com/aliyun/alibaba-cloud-sdk-go/services/slb"
+	slb20140515 "github.com/alibabacloud-go/slb-20140515/v2/client"
+	"github.com/alibabacloud-go/tea/tea"
 	"golang-base/tools"
 )
 
 type LoadBalancer struct {
-	Id            string
-	BackendServer []slb.BackendServerInDescribeLoadBalancerAttribute
+	Id             string
+	BackendServers []*slb20140515.DescribeLoadBalancerAttributeResponseBodyBackendServersBackendServer
 }
 
-func DescribeSLB(pro Provider, slbId string) (*LoadBalancer, error) {
+func createSLBClient(c *Config) (_result *slb20140515.Client, _err error) {
+	// 访问的域名
+	c.Conf.Endpoint = tea.String("slb.aliyuncs.com")
+	_result = &slb20140515.Client{}
+	_result, _err = slb20140515.NewClient(c.Conf)
+	return _result, _err
+}
+
+func DescribeSLB(config *Config, slbId string) (*LoadBalancer, error) {
 	lb := new(LoadBalancer)
-	// Create an slb service client.
-	client, err := slb.NewClientWithProvider(pro.UsedRegion, pro.Pro)
-	if err != nil {
-		tools.WarningLogger.Println(err)
-		return nil, err
+	// Create an slb client.
+	client, _err := createSLBClient(config)
+	if _err != nil {
+		tools.WarningLogger.Println(_err)
+		return nil, _err
 	}
-	// Get lb attribute
-	request := slb.CreateDescribeLoadBalancerAttributeRequest()
-	request.Scheme = "https"
-	request.LoadBalancerId = slbId
-	response, err := client.DescribeLoadBalancerAttribute(request)
-	if err != nil {
-		return nil, err
+	describeLoadBalancerAttributeRequest := &slb20140515.DescribeLoadBalancerAttributeRequest{
+		RegionId:       client.RegionId,
+		LoadBalancerId: tea.String(slbId),
 	}
-	for _, v := range response.BackendServers.BackendServer {
-		lb.BackendServer = append(lb.BackendServer, v)
+	_resp, _err := client.DescribeLoadBalancerAttribute(describeLoadBalancerAttributeRequest)
+	if _err != nil {
+		tools.WarningLogger.Println(_err)
+		return nil, _err
 	}
-	return lb, nil
+	lb.Id = *_resp.Body.RegionId
+	lb.BackendServers = _resp.Body.BackendServers.BackendServer
+	return lb, _err
 }
 
-func AddBackEndServer(pro Provider, balancer LoadBalancer) error {
-	// Create an slb service client.
-	client, err := slb.NewClientWithProvider(pro.UsedRegion, pro.Pro)
-	if err != nil {
-		tools.WarningLogger.Println(err)
-		return err
+func AddBackEndServer(config *Config, balancer *LoadBalancer) error {
+	// Create an slb client.
+	client, _err := createSLBClient(config)
+	if _err != nil {
+		tools.WarningLogger.Println(_err)
+		return _err
 	}
 	// Add backend server
-	request := slb.CreateAddBackendServersRequest()
-	request.Scheme = "https"
-	request.LoadBalancerId = balancer.Id
-	var backendServerList []slb.BackendServerInDescribeLoadBalancerAttribute
-	for i, v := range balancer.BackendServer {
-		backendServerList = append(backendServerList, v)
+	var backendServerList []slb20140515.DescribeLoadBalancerAttributeResponseBodyBackendServersBackendServer
+	for i, v := range balancer.BackendServers {
+		backendServerList = append(backendServerList, *v)
 		if len(backendServerList) == 20 {
 			serverList, err := json.Marshal(backendServerList)
 			if err != nil {
 				tools.ErrorLogger.Fatalln(err)
 			}
-			request.BackendServers = string(serverList)
-			backendServerList = []slb.BackendServerInDescribeLoadBalancerAttribute{}
-			_, err = client.AddBackendServers(request)
+			addBackendServersRequest := &slb20140515.AddBackendServersRequest{
+				RegionId:       client.RegionId,
+				LoadBalancerId: tea.String(balancer.Id),
+				BackendServers: tea.String(string(serverList)),
+			}
+			backendServerList = []slb20140515.DescribeLoadBalancerAttributeResponseBodyBackendServersBackendServer{}
+			_, err = client.AddBackendServers(addBackendServersRequest)
 			if err != nil {
 				return err
 			}
 		}
-		if i == len(balancer.BackendServer)-1 {
+		if i == len(balancer.BackendServers)-1 {
 			serverList, err := json.Marshal(backendServerList)
 			if err != nil {
 				tools.ErrorLogger.Fatalln(err)
 			}
-			request.BackendServers = string(serverList)
-			_, err = client.AddBackendServers(request)
+			addBackendServersRequest := &slb20140515.AddBackendServersRequest{
+				RegionId:       client.RegionId,
+				LoadBalancerId: tea.String(balancer.Id),
+				BackendServers: tea.String(string(serverList)),
+			}
+			_, err = client.AddBackendServers(addBackendServersRequest)
 			if err != nil {
 				return err
 			}
 		}
 	}
-	return err
+	return _err
 }

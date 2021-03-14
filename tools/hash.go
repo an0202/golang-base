@@ -13,6 +13,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
 )
 
@@ -59,4 +60,12 @@ func DecryptAES(srcString, keyString string) (string, error) {
 	blockMode.CryptBlocks(src, src)
 	src = unpadding(src)
 	return string(src[:]), nil
+}
+
+func DecodeBase64String(str string) (string, error) {
+	decodeBytes, err := base64.StdEncoding.DecodeString(str)
+	if err != nil {
+		return "", err
+	}
+	return string(decodeBytes), nil
 }

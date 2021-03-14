@@ -2,7 +2,9 @@ package tools
 
 import (
 	"bufio"
+	"encoding/base64"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"time"
 )
@@ -86,4 +88,21 @@ func GetRecords(srcFile string) []string {
 	}
 	InfoLogger.Println("Value List:", values)
 	return values
+}
+
+//ReadFileToBase64String read content from file and covert it to base64 encode
+func ReadFileToBase64String(srcFile string) string {
+	// Open file on disk.
+	f, _ := os.Open(srcFile)
+
+	// Read entire File into byte slice.
+	reader := bufio.NewReader(f)
+	content, _ := ioutil.ReadAll(reader)
+
+	// Encode as base64.
+	encoded := base64.StdEncoding.EncodeToString(content)
+
+	// Print encoded data to console.
+	InfoLogger.Println("Encoded File To:", encoded)
+	return encoded
 }
