@@ -8,6 +8,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.5.0
 	github.com/alibabacloud-go/darabonba-openapi v0.1.5
 	github.com/alibabacloud-go/ecs-20140526/v2 v2.0.1
+	github.com/alibabacloud-go/ess-20140828 v1.0.1
 	github.com/alibabacloud-go/slb-20140515/v2 v2.0.0
 	github.com/alibabacloud-go/tea v1.1.15
 	github.com/aws/aws-sdk-go v1.33.10
