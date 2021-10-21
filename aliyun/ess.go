@@ -16,6 +16,7 @@ import (
 )
 
 type ScaleRule struct {
+	Ari         string
 	Id          string
 	AlarmTaskId string
 }
@@ -56,11 +57,13 @@ func (a *AutoScaling) describeScalingRules() (*AutoScaling, error) {
 		for _, rule := range _resp.Body.ScalingRules.ScalingRule {
 			if strings.Contains(*rule.ScalingRuleName, "remove") {
 				a.ScaleDownRule.Id = *rule.ScalingRuleId
+				a.ScaleDownRule.Ari = *rule.ScalingRuleAri
 				if rule.Alarms != nil {
 					a.ScaleDownRule.AlarmTaskId = *rule.Alarms.Alarm[0].AlarmTaskId
 				}
 			} else if strings.Contains(*rule.ScalingRuleName, "add") {
 				a.ScaleUpRule.Id = *rule.ScalingRuleId
+				a.ScaleUpRule.Ari = *rule.ScalingRuleAri
 				if rule.Alarms != nil {
 					a.ScaleUpRule.AlarmTaskId = *rule.Alarms.Alarm[0].AlarmTaskId
 				}
@@ -105,5 +108,22 @@ func (a *AutoScaling) EnableScaleDown(config *Config) (*AutoScaling, error) {
 		return nil, _err
 	}
 	tools.InfoLogger.Printf("Enable scale-down for asg %s successfully. \n", a.Id)
+	return a, nil
+}
+
+func (a *AutoScaling) ExecuteScaleUp(config *Config) (*AutoScaling, error) {
+	tools.InfoLogger.Println("Execute scale-up for asg:", a.Id)
+	// Create an ess client.
+	a.Init(config)
+	a.describeScalingRules()
+	executeScalingRuleRequest := &ess20140828.ExecuteScalingRuleRequest{
+		ScalingRuleAri: tea.String(a.ScaleUpRule.Ari),
+	}
+	_, _err := a.Client.ExecuteScalingRule(executeScalingRuleRequest)
+	if _err != nil {
+		tools.WarningLogger.Println(_err)
+		return nil, _err
+	}
+	tools.InfoLogger.Printf("Execute scale-up for asg %s successfully. \n", a.Id)
 	return a, nil
 }

@@ -73,9 +73,36 @@ var EnableScaleDownCmd = &cobra.Command{
 	},
 }
 
+// ExecuteScaleUpCmd
+var ExecuteScaleUpCmd = &cobra.Command{
+	Use:   "execute-scaleup",
+	Short: "Execute Scale Up for auto scaling group",
+	Long: `Execute Scale Up for auto scaling group
+`,
+	Run: func(cmd *cobra.Command, args []string) {
+		file, _ := cmd.Flags().GetString("file")
+		region, _ := cmd.Flags().GetString("region")
+		id, _ := cmd.Flags().GetString("id")
+		conf := aliyun.NewConfig(region)
+		if file != "" {
+			asgIds := tools.GetRecords(file)
+			asg := new(aliyun.AutoScaling)
+			for _, asgId := range asgIds {
+				asg.Id = asgId
+				asg.ExecuteScaleUp(conf)
+			}
+		} else {
+			asg := new(aliyun.AutoScaling)
+			asg.Id = id
+			asg.ExecuteScaleUp(conf)
+		}
+	},
+}
+
 func init() {
 	EssCmd.AddCommand(DisableScaleDownCmd)
 	EssCmd.AddCommand(EnableScaleDownCmd)
+	EssCmd.AddCommand(ExecuteScaleUpCmd)
 	AliyunCmd.AddCommand(EssCmd)
 	EssCmd.PersistentFlags().StringP("file", "f", "", "path to file(asg id)")
 	EssCmd.PersistentFlags().StringP("id", "i", "asg-0xi5phe7f8y943bv0tjn", `auto scaling group id`)
